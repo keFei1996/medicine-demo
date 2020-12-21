@@ -38,6 +38,7 @@
         <el-table
           v-bind="$attrs"
           v-on="$listeners"
+          :height="250"
           :data="pagedData"
           size="mini"
           :style="{
@@ -53,7 +54,8 @@
             :key="column.key"
             :label="column.label"
             :prop="column.key"
-            :width="column.width">
+            :width="column.width"
+            :show-overflow-tooltip="true">
             <template slot-scope="{ row, $index }">
               <slot :name="column.key" :row="row" :index="$index">{{ row[column.key] }}</slot>
             </template>
@@ -125,6 +127,7 @@
     <!-- 输入框 -->
     <el-input
       ref="reference"
+      class="my-input"
       :class="{ 'is-focus': visible }"
       v-popover:table-popover
       v-model="selectedLabel"
@@ -173,7 +176,7 @@ export default {
     data: Array,
     tableWidth: {
       type: String,
-      default: '400px'
+      default: '800px'
     },
     disabled: Boolean,
     clearable: Boolean,
@@ -270,7 +273,8 @@ export default {
       const row = this.findRowByKey(val)
       this.selectedLabel = row ? row[this.props.label] : ''
       this.visible = false
-      this.$emit('input', val)
+      this.$emit('input', val);
+      this.$emit('rowChange', row)
     },
     // 监听多选值变化
     checkedKeys (val) {
@@ -479,7 +483,16 @@ export default {
 }
 </script>
 
-<style>
+<style scoped lang="scss">
+.my-input{
+  ::v-deep.el-input__inner{
+    height: 32px;
+    line-height: 32px;
+  }
+  .el-input__icon{
+    line-height: 32px;
+  }
+}
 :focus {
   outline: 0;
 }

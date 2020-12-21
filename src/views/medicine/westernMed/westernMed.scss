@@ -60,7 +60,13 @@
       background: #fff;
       border-right: 1px solid #ebeef5;
       border-bottom: 1px solid #ebeef5;
-      padding-left: 5px;
+      //padding-left: 5px;
+      .z-name{
+        padding-left: 5px;
+        height: 32px;
+        line-height: 32px;
+        color: #333;
+      }
     }
     &.active{
       .z-item{

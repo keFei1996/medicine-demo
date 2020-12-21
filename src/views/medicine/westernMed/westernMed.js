@@ -1,14 +1,22 @@
 import { drugList } from "@/views/medicine/westernMed/data";
+import CatTableSelect from "@/components/TableSelect/CatTableSelect";
 
 export default {
   name: "westernMed",
+  components: {
+    CatTableSelect
+  },
   data() {
     return {
       presList: [{ name: '普通院内处方' }], // 处方列表
       presIndex: 0,
       activeNames: [0],
       groupList: {
-        0: [[{}]] // 属性名是处方下表，属性值是具体某个处方的内容
+        0: [
+          [
+            {}
+          ]
+        ] // 属性名是处方下表，属性值是具体某个处方的内容
       },
       itemActive: { groupIndex: 0, itemIndex: 0 },
       form: {
@@ -16,13 +24,69 @@ export default {
           {  }
         ]
       },
-      drugList
+      drugList,
+      value: '',
+      medColumns: [
+        {
+          key: 'medName',
+          label: '药品名称',
+          width: 140
+        },
+        {
+          key: 'spec',
+          label: '规格'
+        },
+        {
+          key: 'presUnit',
+          label: '单位'
+        },
+        {
+          key: 'formName',
+          label: '剂型'
+        },
+        {
+          key: 'stockNum',
+          label: '参考库存'
+        },
+        {
+          key: 'retaPrice',
+          label: '单价'
+        },
+        {
+          key: 'factoryName',
+          label: '产地'
+        },
+        {
+          key: 'inputcode1',
+          label: '拼'
+        },
+        {
+          key: 'inputcode2',
+          label: '笔'
+        }
+      ],
+      medProps: {
+        key: 'medId',
+        label: 'medName'
+      },
+      rowColName: ''
     }
   },
   created() {
 
   },
   methods: {
+    // 每一行的每一格点击
+    rowColClick(name) {
+      this.rowColName = name
+    },
+    // 表格列表切换
+    tableRowChange(e, groupIndex, index) {
+      if(e) {
+        const { groupList, presIndex } = this;
+        groupList[presIndex][groupIndex][index] = e;
+      }
+    },
     // 每一行点击
     itemClick(groupIndex, itemIndex) {
       this.itemActive = { groupIndex, itemIndex };
