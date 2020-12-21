@@ -1,0 +1,51 @@
+// global
+$footerBg: #f0f2f5;
+
+// 按钮颜色
+$btnMain: #1890ff; // 按钮主色调
+$btnReset: #e4e4e4; //重置按钮
+$btnCancel: #fff;
+$btnPrint: #e6a23c;
+$btnTool: #85ce61;
+$btnValidate: #e6a23c;
+
+// 状态颜色
+$stateSuccess: #1dc202;
+$stateWarning: #e6a23c;
+$stateError: #f90000;
+$stateCancel: #ccc;
+
+// table
+$tableHeader: #f2f2f2;
+
+
+
+// 侧边栏
+$menuText:#fff;
+$menuActiveText:#409EFF;
+$menuActiveColor: #4880FF;
+//$subMenuActiveText:#f4f4f5; //https://github.com/ElemeFE/element/issues/12951
+$subMenuActiveText:#fff; // 医后付
+$sidebarBg:#001529;
+$menuBg:#001529;
+$menuHover:#263445;
+
+$subMenuBg:#000C17; // 菜单栏子菜单颜色
+$subMenuActiveBg:#4880FF; // 菜单栏子菜单选中颜色
+$subMenuHover:#001529;
+
+$sideBarWidth: 220px;
+
+// the :export directive is the magic sauce for webpack
+// https://www.bluematador.com/blog/how-to-share-variables-between-js-and-sass
+:export {
+  menuText: $menuText;
+  menuActiveText: $menuActiveText;
+  subMenuActiveText: $subMenuActiveText;
+  menuBg: $menuBg;
+  menuHover: $menuHover;
+  subMenuBg: $subMenuBg;
+  subMenuHover: $subMenuHover;
+  sideBarWidth: $sideBarWidth;
+}
+
