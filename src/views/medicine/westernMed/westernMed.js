@@ -76,9 +76,11 @@ export default {
 
   },
   methods: {
-    // 每一行的每一格点击
-    rowColClick(name) {
-      this.rowColName = name
+    boxClick(e) {
+      const classList = e.target.classList;
+      console.log(classList)
+      this.rowColName = classList[1];
+      console.log(this.rowColName)
     },
     // 表格列表切换
     tableRowChange(e, groupIndex, index) {

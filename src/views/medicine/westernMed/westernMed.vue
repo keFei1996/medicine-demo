@@ -1,5 +1,5 @@
 <template>
-  <div class="z-card-style">
+  <div class="z-card-style" @click="boxClick">
     <div class="tool">
       <div class="tool-left">
         <el-button size="small" type="primary" plain>
@@ -41,38 +41,95 @@
       <el-collapse class="my-collapse" v-model="activeNames">
         <el-collapse-item class="collapse-item" v-for="(group, groupIndex) in groupList[presIndex]" :key="groupIndex" :title="`第${groupIndex+1}组`" :name="groupIndex">
           <div class="center-group" :class="[ index === itemActive.itemIndex && groupIndex === itemActive.groupIndex ? 'active' : '' ]" v-for="(item, index) in group" :key="index" @click="itemClick(groupIndex, index)">
-            <div class="z-item" :class="[index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'useUnit' ? 'active' : '']" style="width: 100px" @click="rowColClick('useUnit')">
+<!--            药名标记-->
+            <div class="z-med-item" :class="[index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'useUnit' ? 'active' : '']" style="width: 100px">
               <div class="z-name">{{ item.useUnit }}</div>
             </div>
-            <div class="z-item" style="width: 160px" @click="rowColClick('medName')">
-              <cat-table-select
-                v-model="item.medId"
-                :data="drugList"
-                :columns="medColumns"
-                :props="medProps"
-                @rowChange="tableRowChange($event, groupIndex, index)"
-                v-if="index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'medName'"></cat-table-select>
-              <div class="z-name" v-else>{{ item.medName }}</div>
+<!--            药名名称-->
+            <ValidationProvider rules="required" v-slot="{ errors, classes }" name="用量" style="width: 160px">
+              <div class="z-med-item" :class="classes">
+                <cat-table-select
+                  v-model="item.medId"
+                  :data="drugList"
+                  :columns="medColumns"
+                  :props="medProps"
+                  @rowChange="tableRowChange($event, groupIndex, index)"></cat-table-select>
+              </div>
+            </ValidationProvider>
+<!--            <div class="z-item" style="width: 160px">-->
+<!--              <cat-table-select-->
+<!--                v-model="item.medId"-->
+<!--                :data="drugList"-->
+<!--                :columns="medColumns"-->
+<!--                :props="medProps"-->
+<!--                @rowChange="tableRowChange($event, groupIndex, index)"-->
+<!--                v-if="index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'medName'"></cat-table-select>-->
+<!--              <div class="z-name" :class="[`medName${groupIndex}${index}`]" v-else>{{ item.medName }}</div>-->
+<!--            </div>-->
+<!--            剂型-->
+            <div class="z-med-item z-flex1" :class="[ rowColName === `formName${groupIndex}${index}` ? 'active' : '' ]">
+              <div class="z-med-name" :class="[`formName${groupIndex}${index}`]">{{ item.formName }}</div>
             </div>
-            <div class="z-item z-flex2" :class="[index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'formName' ? 'active' : '']" @click="rowColClick('formName')">
-              <div class="z-name">{{ item.formName }}</div>
-            </div>
-            <div class="z-item z-flex2" style="width: 50px">
+<!--            规格-->
+            <div class="z-item z-flex1" style="width: 50px">
               <div class="z-name">{{ item.spec }}</div>
             </div>
-            <div class="z-item z-flex3">
+<!--            产地-->
+            <div class="z-item z-flex1">
               <div class="z-name">{{ item.factoryName }}</div>
             </div>
-            <div class="z-item" style="width: 50px">
-              <el-input />
-            </div>
-            <div class="z-item" style="width: 50px">剂量</div>
-            <div class="z-item z-flex2">用法</div>
-            <div class="z-item z-flex2">给药方式</div>
-            <div class="z-item z-flex2">用药天数</div>
-            <div class="z-item z-flex2">用药次数</div>
-            <div class="z-item z-flex2">用药数量</div>
-            <div class="z-item z-flex3">备注</div>
+<!--            用量-->
+            <ValidationProvider rules="required" v-slot="{ errors, classes }" name="用量" style="width: 80px">
+              <div class="z-med-item" :class="classes">
+                <el-input class="z-input" size="small" v-model="item.usage"/>
+<!--                <span>支</span>-->
+<!--                <el-input size="small" v-model="item.usage" v-if="rowColName === `usage${groupIndex}${index}`"/>-->
+<!--&lt;!&ndash;                <span>{{ errors[0] }}</span>&ndash;&gt;-->
+<!--                <div class="z-med-name" :class="[`usage${groupIndex}${index}`]" v-else>{{ item.usage }}支</div>-->
+              </div>
+            </ValidationProvider>
+            <!--            剂量-->
+            <ValidationProvider rules="required" v-slot="{ errors, classes }" name="用量" style="width: 50px">
+              <div class="z-med-item" :class="classes">
+                <el-input size="small" v-model="item.dose"/>
+              </div>
+            </ValidationProvider>
+<!--            用法-->
+            <ValidationProvider class="z-flex1" rules="required" v-slot="{ errors, classes }" name="用量">
+              <div class="z-med-item" :class="classes">
+                <el-input size="small" v-model="item.dose"/>
+              </div>
+            </ValidationProvider>
+<!--            给药方式-->
+            <ValidationProvider class="z-flex1" rules="required" v-slot="{ errors, classes }" name="用量">
+              <div class="z-med-item" :class="classes">
+                <el-input size="small" v-model="item.dose"/>
+              </div>
+            </ValidationProvider>
+<!--            用药天数-->
+            <ValidationProvider class="z-flex1" rules="required" v-slot="{ errors, classes }" name="用量">
+              <div class="z-med-item" :class="classes">
+                <el-input size="small" v-model="item.dose"/>
+              </div>
+            </ValidationProvider>
+<!--            用药次数-->
+            <ValidationProvider class="z-flex1" rules="required" v-slot="{ errors, classes }" name="用量">
+              <div class="z-med-item" :class="classes">
+                <el-input size="small" v-model="item.dose"/>
+              </div>
+            </ValidationProvider>
+<!--            用药数量-->
+            <ValidationProvider class="z-flex1" rules="required" v-slot="{ errors, classes }" name="用量">
+              <div class="z-med-item" :class="classes">
+                <el-input size="small" v-model="item.dose"/>
+              </div>
+            </ValidationProvider>
+<!--            备注-->
+            <ValidationProvider class="z-flex1" rules="required" v-slot="{ errors, classes }" name="用量">
+              <div class="z-med-item" :class="classes">
+                <el-input size="small" v-model="item.dose"/>
+              </div>
+            </ValidationProvider>
           </div>
         </el-collapse-item>
       </el-collapse>

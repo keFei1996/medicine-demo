@@ -488,7 +488,7 @@ export default {
   ::v-deep.el-input__inner{
     height: 32px;
     line-height: 32px;
-    background: #FFFFE6;
+    /*background: #FFFFE6;*/
   }
   .el-input__icon{
     line-height: 32px;

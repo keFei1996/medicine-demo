@@ -512,3 +512,20 @@ $abbrev in ( m: margin,
     margin-left: 115px !important;
   }
 }
+.el-input.invalid{
+  .el-input__inner{
+    border-color: #F56C6C;
+  }
+}
+.el-input.change{
+
+}
+.med-input-item{
+  &.invalid{
+    background: #F56C6C !important;
+  }
+}
+// 药品row
+.z-med-item{
+
+}
