@@ -69,18 +69,44 @@ export default {
         label: 'medName'
       },
       rowColName: '',
-      keyArr: ['medName', 'formName', 'spec', 'factoryName', 'useUnit']
+      keyArr: ['medName', 'formName', 'spec', 'factoryName', 'useUnit'],
+      usageList: [
+        { code: 'qd', name: '一日一次' },
+        { code: 'bid', name: '一日二次' },
+        { code: 'tid', name: '一日三次' },
+        { code: 'qid', name: '一日四次' },
+        { code: 'qm', name: '早上一次' }
+      ],
+      usageColumns: [
+        {
+          key: 'code',
+          label: '代码',
+          width: 70
+        },
+        {
+          key: 'name',
+          label: '名字',
+          width: 100
+        }
+      ],
+      usageProps: {
+        key: 'code',
+        label: 'name'
+      }
     }
   },
   created() {
 
   },
   methods: {
+    // 点击保存
+    saveClick() {
+      console.log(this.$refs['my-form'])
+      this.$refs['my-form'].reset();
+    },
     boxClick(e) {
       const classList = e.target.classList;
-      console.log(classList)
       this.rowColName = classList[1];
-      console.log(this.rowColName)
     },
     // 表格列表切换
     tableRowChange(e, groupIndex, index) {

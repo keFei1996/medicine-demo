@@ -512,20 +512,56 @@ $abbrev in ( m: margin,
     margin-left: 115px !important;
   }
 }
-.el-input.invalid{
-  .el-input__inner{
-    border-color: #F56C6C;
-  }
-}
-.el-input.change{
-
-}
-.med-input-item{
-  &.invalid{
-    background: #F56C6C !important;
-  }
-}
+//.el-input.invalid{
+//  .el-input__inner{
+//    border-color: #F56C6C;
+//  }
+//}
+//.el-input.change{
+//
+//}
+//.med-input-item{
+//  &.invalid{
+//    background: #F56C6C !important;
+//  }
+//}
 // 药品row
 .z-med-item{
-
+  padding: 5px 0;
+  min-height: 32px;
+  //height: 32px;
+  color: #333;
+  line-height: 32px;
+  border-right: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5;
+  padding-left: 5px;
+  .z-med-name{
+    padding-left: 5px;
+    height: 32px;
+    line-height: 32px;
+    color: #333;
+  }
+  &.active{
+    background: #FFFFE6 !important;
+  }
+  .z-input-small{
+    width: 40px;
+  }
+  input[type="number"]{
+    padding: 0 0 0 4px;
+  }
+  .el-input.changed{
+    .el-input__inner{
+      border-color: #E6A23C;
+    }
+  }
+  .el-input.invalid{
+    .el-input__inner{
+      border-color: #F56C6C;
+    }
+  }
+  .el-input__inner{
+    height: 32px;
+    line-height: 32px;
+  }
 }
