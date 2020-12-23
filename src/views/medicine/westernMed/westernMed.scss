@@ -67,6 +67,9 @@
         line-height: 32px;
         color: #333;
       }
+      &.active{
+        background: #FFFFE6 !important;
+      }
     }
     &.active{
       .z-item{

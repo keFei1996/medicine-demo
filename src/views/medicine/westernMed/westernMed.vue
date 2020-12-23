@@ -41,8 +41,8 @@
       <el-collapse class="my-collapse" v-model="activeNames">
         <el-collapse-item class="collapse-item" v-for="(group, groupIndex) in groupList[presIndex]" :key="groupIndex" :title="`第${groupIndex+1}组`" :name="groupIndex">
           <div class="center-group" :class="[ index === itemActive.itemIndex && groupIndex === itemActive.groupIndex ? 'active' : '' ]" v-for="(item, index) in group" :key="index" @click="itemClick(groupIndex, index)">
-            <div class="z-item" style="width: 100px" @click="rowColClick('formName')">
-              <div class="z-name">{{ item.formName }}</div>
+            <div class="z-item" :class="[index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'useUnit' ? 'active' : '']" style="width: 100px" @click="rowColClick('useUnit')">
+              <div class="z-name">{{ item.useUnit }}</div>
             </div>
             <div class="z-item" style="width: 160px" @click="rowColClick('medName')">
               <cat-table-select
@@ -54,7 +54,7 @@
                 v-if="index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'medName'"></cat-table-select>
               <div class="z-name" v-else>{{ item.medName }}</div>
             </div>
-            <div class="z-item z-flex2">
+            <div class="z-item z-flex2" :class="[index === itemActive.itemIndex && groupIndex === itemActive.groupIndex && rowColName === 'formName' ? 'active' : '']" @click="rowColClick('formName')">
               <div class="z-name">{{ item.formName }}</div>
             </div>
             <div class="z-item z-flex2" style="width: 50px">
@@ -63,7 +63,9 @@
             <div class="z-item z-flex3">
               <div class="z-name">{{ item.factoryName }}</div>
             </div>
-            <div class="z-item" style="width: 50px">用量</div>
+            <div class="z-item" style="width: 50px">
+              <el-input />
+            </div>
             <div class="z-item" style="width: 50px">剂量</div>
             <div class="z-item z-flex2">用法</div>
             <div class="z-item z-flex2">给药方式</div>

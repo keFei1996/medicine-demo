@@ -25,7 +25,6 @@ export default {
         ]
       },
       drugList,
-      value: '',
       medColumns: [
         {
           key: 'medName',
@@ -69,7 +68,8 @@ export default {
         key: 'medId',
         label: 'medName'
       },
-      rowColName: ''
+      rowColName: '',
+      keyArr: ['medName', 'formName', 'spec', 'factoryName', 'useUnit']
     }
   },
   created() {
@@ -84,7 +84,9 @@ export default {
     tableRowChange(e, groupIndex, index) {
       if(e) {
         const { groupList, presIndex } = this;
-        groupList[presIndex][groupIndex][index] = e;
+        this.keyArr.forEach(ev => {
+          groupList[presIndex][groupIndex][index][ev] = e[ev]
+        })
       }
     },
     // 每一行点击
