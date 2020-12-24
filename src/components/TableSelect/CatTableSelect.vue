@@ -42,7 +42,7 @@
           :data="pagedData"
           size="mini"
           :style="{
-            width: tableWidth
+            'max-width': tableWidth
           }">
           <el-table-column fixed :width="30">
             <template slot-scope="{ row }">
@@ -270,7 +270,11 @@ export default {
   watch: {
     // 监听单选值变化
     selectRow (val) {
-      const row = this.findRowByKey(val)
+      const row = this.findRowByKey(val);
+      if(row.stockNum === 0) {
+        this.$message.error('当前药品库存为0');
+        return
+      }
       this.selectedLabel = row ? row[this.props.label] : ''
       this.visible = false
       this.$emit('input', val);
@@ -432,50 +436,50 @@ export default {
     }
   },
   created () {
-    this.cachedPlaceHolder = this.currentPlaceholder = this.placeholder
-    if (this.multiple && !Array.isArray(this.value)) {
-      this.$emit('input', [])
-    }
-    if (!this.multiple && Array.isArray(this.value)) {
-      this.$emit('input', '')
-    }
-    this.debouncedOnInputChange = debounce(0, () => {
-      this.onInputChange()
-    })
-    this.debouncedQueryChange = debounce(0, (e) => {
-      this.handleQueryChange(e.target.value)
-    })
+    // this.cachedPlaceHolder = this.currentPlaceholder = this.placeholder
+    // if (this.multiple && !Array.isArray(this.value)) {
+    //   this.$emit('input', [])
+    // }
+    // if (!this.multiple && Array.isArray(this.value)) {
+    //   this.$emit('input', '')
+    // }
+    // this.debouncedOnInputChange = debounce(0, () => {
+    //   this.onInputChange()
+    // })
+    // this.debouncedQueryChange = debounce(0, (e) => {
+    //   this.handleQueryChange(e.target.value)
+    // })
   },
   mounted () {
-    if (this.multiple && Array.isArray(this.value) && this.value.length > 0) {
-      this.currentPlaceholder = ''
-    }
-    // 初始树没有渲染，显示弹出框将树渲染出来，设置已选中节点再隐藏弹出框
-    this.visible = true
-    this.checkedKeys = this.value
-    this.setSelected()
-    this.visible = false
-
-    addResizeListener(this.$el, this.handleResize)
-
-    const reference = this.$refs.reference
-    if (reference && reference.$el) {
-      const sizeMap = {
-        medium: 36,
-        small: 32,
-        mini: 28
-      }
-      const input = reference.$el.querySelector('input')
-      this.initialInputHeight = input.getBoundingClientRect().height || sizeMap[this.tableSelectSize]
-    }
-    if (this.remote && this.multiple) {
-      this.resetInputHeight()
-    }
-    this.$nextTick(() => {
-      if (reference && reference.$el) {
-        this.inputWidth = reference.$el.getBoundingClientRect().width
-      }
-    })
+    // if (this.multiple && Array.isArray(this.value) && this.value.length > 0) {
+    //   this.currentPlaceholder = ''
+    // }
+    // // 初始树没有渲染，显示弹出框将树渲染出来，设置已选中节点再隐藏弹出框
+    // this.visible = true
+    // this.checkedKeys = this.value
+    // this.setSelected()
+    // this.visible = false
+    //
+    // addResizeListener(this.$el, this.handleResize)
+    //
+    // const reference = this.$refs.reference
+    // if (reference && reference.$el) {
+    //   const sizeMap = {
+    //     medium: 36,
+    //     small: 32,
+    //     mini: 28
+    //   }
+    //   const input = reference.$el.querySelector('input')
+    //   this.initialInputHeight = input.getBoundingClientRect().height || sizeMap[this.tableSelectSize]
+    // }
+    // if (this.remote && this.multiple) {
+    //   this.resetInputHeight()
+    // }
+    // this.$nextTick(() => {
+    //   if (reference && reference.$el) {
+    //     this.inputWidth = reference.$el.getBoundingClientRect().width
+    //   }
+    // })
   },
   destroyed () {
     if (this.$el && this.handleResize) removeResizeListener(this.$el, this.handleResize)

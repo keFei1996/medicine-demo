@@ -69,7 +69,7 @@ export default {
         label: 'medName'
       },
       rowColName: '',
-      keyArr: ['medName', 'formName', 'spec', 'factoryName', 'useUnit'],
+      keyArr: ['medName', 'formName', 'spec', 'factoryName', 'useUnit', 'doseUnit', 'doseRatio', 'useRatio', 'presRatio', 'presUnit'],
       usageList: [
         { code: 'qd', name: '一日一次' },
         { code: 'bid', name: '一日二次' },
@@ -92,7 +92,20 @@ export default {
       usageProps: {
         key: 'code',
         label: 'name'
-      }
+      },
+      modeList: [
+        { code: 'po', name: '口服' },
+        { code: 'im', name: '肌注' },
+        { code: 'iv', name: '静推' },
+        { code: 'ivgtt', name: '静滴' },
+        { code: 'db', name: '地鼻' }
+      ],
+      remarkList: [
+        { code: 1, name: '餐前' },
+        { code: 2, name: '餐时' },
+        { code: 3, name: '餐后' },
+        { code: 4, name: '睡前' }
+      ]
     }
   },
   created() {
@@ -105,16 +118,20 @@ export default {
       this.$refs['my-form'].reset();
     },
     boxClick(e) {
-      const classList = e.target.classList;
-      this.rowColName = classList[1];
+      // console.log(e)
+      // const classList = e.target.classList;
+      // this.rowColName = classList[1];
     },
     // 表格列表切换
     tableRowChange(e, groupIndex, index) {
       if(e) {
         const { groupList, presIndex } = this;
         this.keyArr.forEach(ev => {
-          groupList[presIndex][groupIndex][index][ev] = e[ev]
+          this.$set(groupList[presIndex][groupIndex][index], ev, e[ev])
+          // groupList[presIndex][groupIndex][index][ev] = e[ev]
         })
+        console.log(this.$refs['my-form'].validateWithInfo())
+        // this.$set(groupList[presIndex][groupIndex][index], 'dose', e.doseRatio)
       }
     },
     // 每一行点击
