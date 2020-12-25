@@ -2,14 +2,8 @@ import { extend, ValidationObserver, ValidationProvider, localize, configure } f
 import { required, email, min, between, numeric } from 'vee-validate/dist/rules'
 import zh_CN from 'vee-validate/dist/locale/zh_CN.json';
 localize('zh_cn', zh_CN) // 配置中文
-// configure({
-//   classes: {
-//     valid: 'is-valid',
-//     invalid: 'is-invalid',
-//     dirty: 'is-dirty' // multiple classes per flag!
-//     // ...
-//   }
-// })
+configure({
+})
 export default {
   install (Vue) {
     Vue.component('ValidationObserver', ValidationObserver)

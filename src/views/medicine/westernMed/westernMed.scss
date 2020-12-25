@@ -124,6 +124,13 @@
     padding-bottom: 0;
   }
 }
-.z-med-item{
-
+.med-validate-item{
+  flex-shrink: 0;
+  &.med-flex1{
+    width: 10px;
+    flex: 1;
+  }
+}
+.w80{
+  width: 80px;
 }

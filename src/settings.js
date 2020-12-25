@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: '商城',
+  title: '西药',
 
   /**
    * @type {boolean} true | false

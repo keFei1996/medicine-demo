@@ -1,5 +1,6 @@
 import { drugList } from "@/views/medicine/westernMed/data";
 import CatTableSelect from "@/components/TableSelect/CatTableSelect";
+import { isArray } from "@/utils/typePub";
 
 export default {
   name: "westernMed",
@@ -114,13 +115,25 @@ export default {
   methods: {
     // 点击保存
     saveClick() {
-      console.log(this.$refs['my-form'])
-      this.$refs['my-form'].reset();
+      // this.$refs['my-form'].validateWithInfo()
+      // console.log(this.$refs['my-form'])
+      // this.$refs['my-form'].reset();
     },
     boxClick(e) {
-      // console.log(e)
-      // const classList = e.target.classList;
-      // this.rowColName = classList[1];
+      const path = e.path;
+      for(let i=0; i <= path.length - 1; i++) {
+        if(path[i].classList && Array.from(path[i].classList).includes('z-med-item')) {
+          console.log(6)
+          const classList = Array.from(path[i].classList);
+          classList.forEach(ev => {
+            if(ev !== 'z-med-item') {
+              this.rowColName = ev;
+            }
+          })
+          return
+        }
+      }
+      this.rowColName = ''
     },
     // 表格列表切换
     tableRowChange(e, groupIndex, index) {
@@ -130,7 +143,10 @@ export default {
           this.$set(groupList[presIndex][groupIndex][index], ev, e[ev])
           // groupList[presIndex][groupIndex][index][ev] = e[ev]
         })
-        console.log(this.$refs['my-form'].validateWithInfo())
+        // console.log(this.$refs['my-form'].validateWithInfo())
+        setTimeout(() => {
+          this.$refs['my-form'].validateWithInfo()
+        })
         // this.$set(groupList[presIndex][groupIndex][index], 'dose', e.doseRatio)
       }
     },

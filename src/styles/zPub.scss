@@ -534,7 +534,12 @@ $abbrev in ( m: margin,
   border-right: 1px solid #ebeef5;
   //border-bottom: 1px solid #ebeef5;
   padding: 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   .z-med-name{
+    width: 100%;
     padding-left: 5px;
     height: 32px;
     line-height: 32px;
