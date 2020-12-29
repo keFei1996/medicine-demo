@@ -15,7 +15,7 @@ export default {
       groupList: {
         0: [
           [
-            {}
+            { groupIndex: 0 }
           ]
         ] // 属性名是处方下表，属性值是具体某个处方的内容
       },
@@ -106,24 +106,54 @@ export default {
         { code: 2, name: '餐时' },
         { code: 3, name: '餐后' },
         { code: 4, name: '睡前' }
-      ]
+      ],
+      newAddIndex: { groupIndex: 0, itemIndex: 0 }  // 最新添加的下标位置
     }
   },
   created() {
 
   },
   methods: {
+    // 单元格颜色
+    cellStyle({row, column}) {
+      const rowColName = `${column.property}${row.groupIndex}${row.index}`;
+      if(rowColName === this.rowColName) {
+        return {
+          background: 'red'
+        }
+      }else {
+        return {
+          background: 'white'
+        }
+      }
+    },
+    rowClassName({row, rowIndex}) {
+      row.index = rowIndex
+    },
+    // 单元格点击
+    cellClick(row, column, cell) {
+      this.rowColName = `${column.property}${row.groupIndex}${row.index}`;
+    },
     // 点击保存
     saveClick() {
-      // this.$refs['my-form'].validateWithInfo()
+      this.$refs['my-form'].validateWithInfo().then(res => {
+        const formDom = document.getElementById('my-form');
+        const errors = formDom.querySelector('.invalid');
+        const input = errors.querySelector('input[type=text]');
+        console.log(input)
+        input.focus()
+        // console.log(formDom)
+        // const errors = formDom.querySelector('.invalid');
+        // console.log(errors)
+      })
       // console.log(this.$refs['my-form'])
       // this.$refs['my-form'].reset();
     },
     boxClick(e) {
+      return;
       const path = e.path;
       for(let i=0; i <= path.length - 1; i++) {
         if(path[i].classList && Array.from(path[i].classList).includes('z-med-item')) {
-          console.log(6)
           const classList = Array.from(path[i].classList);
           classList.forEach(ev => {
             if(ev !== 'z-med-item') {
@@ -144,9 +174,9 @@ export default {
           // groupList[presIndex][groupIndex][index][ev] = e[ev]
         })
         // console.log(this.$refs['my-form'].validateWithInfo())
-        setTimeout(() => {
-          this.$refs['my-form'].validateWithInfo()
-        })
+        // setTimeout(() => {
+        //   this.$refs['my-form'].validateWithInfo()
+        // })
         // this.$set(groupList[presIndex][groupIndex][index], 'dose', e.doseRatio)
       }
     },
