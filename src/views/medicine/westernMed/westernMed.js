@@ -1,7 +1,16 @@
 import { drugList } from "@/views/medicine/westernMed/data";
 import CatTableSelect from "@/components/TableSelect/CatTableSelect";
-import { isArray } from "@/utils/typePub";
+import {cloneObj, isArray} from "@/utils/typePub";
 
+const presItemCopy = [
+  [
+    { groupIndex: 0 }
+  ]
+];
+const itemActiveCopy = { groupIndex: 0, itemIndex: 0 };
+const groupItemCopy = [
+  { groupIndex: 0 }
+];
 export default {
   name: "westernMed",
   components: {
@@ -13,13 +22,9 @@ export default {
       presIndex: 0,
       activeNames: [0],
       groupList: {
-        0: [
-          [
-            { groupIndex: 0 }
-          ]
-        ] // 属性名是处方下表，属性值是具体某个处方的内容
+        0: cloneObj(presItemCopy) // 属性名是处方下表，属性值是具体某个处方的内容
       },
-      itemActive: { groupIndex: 0, itemIndex: 0 },
+      itemActive: cloneObj(itemActiveCopy),
       form: {
         dataList: [
           {  }
@@ -91,7 +96,7 @@ export default {
         }
       ],
       usageProps: {
-        key: 'code',
+        key: 'name',
         label: 'name'
       },
       modeList: [
@@ -106,33 +111,47 @@ export default {
         { code: 2, name: '餐时' },
         { code: 3, name: '餐后' },
         { code: 4, name: '睡前' }
-      ],
-      newAddIndex: { groupIndex: 0, itemIndex: 0 }  // 最新添加的下标位置
+      ]
     }
   },
   created() {
 
   },
   methods: {
+    // 行单元颜色
+    rowStyle({row}) {
+      const { itemActive } = this;
+      if(row.groupIndex === itemActive.groupIndex && row.index === itemActive.itemIndex) {
+        return {
+          background: '#ECF5FF'
+        }
+      }else {
+        return {
+          background: '#fff'
+        }
+      }
+    },
     // 单元格颜色
     cellStyle({row, column}) {
       const rowColName = `${column.property}${row.groupIndex}${row.index}`;
       if(rowColName === this.rowColName) {
         return {
-          background: 'red'
+          background: '#FFFFE6'
         }
       }else {
         return {
-          background: 'white'
+          background: 'transparent'
         }
       }
     },
     rowClassName({row, rowIndex}) {
-      row.index = rowIndex
+      row.index = rowIndex;
     },
     // 单元格点击
-    cellClick(row, column, cell) {
+    cellClick(row, column, cell, event) {
+      this.itemActive = { groupIndex: row.groupIndex, itemIndex: row.index };
       this.rowColName = `${column.property}${row.groupIndex}${row.index}`;
+      event.stopPropagation();
     },
     // 点击保存
     saveClick() {
@@ -150,19 +169,6 @@ export default {
       // this.$refs['my-form'].reset();
     },
     boxClick(e) {
-      return;
-      const path = e.path;
-      for(let i=0; i <= path.length - 1; i++) {
-        if(path[i].classList && Array.from(path[i].classList).includes('z-med-item')) {
-          const classList = Array.from(path[i].classList);
-          classList.forEach(ev => {
-            if(ev !== 'z-med-item') {
-              this.rowColName = ev;
-            }
-          })
-          return
-        }
-      }
       this.rowColName = ''
     },
     // 表格列表切换
@@ -180,10 +186,7 @@ export default {
         // this.$set(groupList[presIndex][groupIndex][index], 'dose', e.doseRatio)
       }
     },
-    // 每一行点击
-    itemClick(groupIndex, itemIndex) {
-      this.itemActive = { groupIndex, itemIndex };
-    },
+    // ifrmae发送消息
     postMessage() {
       // b页面
       parent.postMessage(
@@ -191,11 +194,20 @@ export default {
         "http://localhost:8080"
       );
     },
-    presAddClick() {
-      this.presList.push({ name: '普通院内处方', groupList: [] });
-      this.presIndex = this.presList.length - 1;
-      this.groupList[this.presIndex] = [[{}]];
+    // 重置
+    reset() {
+      this.itemActive = cloneObj(itemActiveCopy);
+      this.rowColName = '';
+      this.$refs['my-form'].reset();
     },
+    // 处方添加
+    presAddClick() {
+      this.presList.push({ name: '普通院内处方'});
+      this.presIndex = this.presList.length - 1;
+      this.groupList[this.presIndex] = cloneObj(presItemCopy);
+      this.reset()
+    },
+    // 处方删除
     presDelClick(index) {
       this.presList.splice(index, 1);
       delete this.groupList[index];
@@ -204,13 +216,15 @@ export default {
         this.presIndex = this.presList.length - 1
       }
     },
+    // 处方下标点击
     presIndexClick(index) {
       this.presIndex = index;
+      this.reset()
     },
     // 新增行
     lineAddClick() {
       const { itemActive, groupList, presIndex } = this;
-      groupList[presIndex][itemActive.groupIndex].push({})
+      groupList[presIndex][itemActive.groupIndex].push({ groupIndex: itemActive.groupIndex })
     },
     // 删除行
     lineDelClick() {
@@ -220,7 +234,8 @@ export default {
     // 新增组
     groupAddClick() {
       const { groupList, activeNames, presIndex } = this;
-      groupList[presIndex].push([{}]);
+      const groupIndex = groupList[presIndex].length;
+      groupList[presIndex].push([{ groupIndex }]);
       // 添加折叠面板
       activeNames.push(groupList[presIndex].length - 1)
     },

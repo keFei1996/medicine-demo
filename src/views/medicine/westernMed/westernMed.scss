@@ -124,16 +124,32 @@
     padding-bottom: 0;
   }
 }
-.med-validate-item{
-  flex-shrink: 0;
-  &.med-flex1{
-    width: 10px;
-    flex: 1;
-  }
-}
 .w80{
   width: 80px;
 }
 .med-page{
   min-width: 1140px;
+  height: 100vh;
+  overflow: auto;
+}
+.med-validate-item{
+  position: relative;
+  &.invalid{
+    background: #FFBEC9;
+  }
+  &.changed{
+    color: #c00000;
+    &::before{
+      content: '';
+      display: block;
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-color: transparent #C00000;
+      border-width: 0 8px 8px 0;
+      border-style: solid;
+      right: 4px;
+      top: 4px;
+    }
+  }
 }

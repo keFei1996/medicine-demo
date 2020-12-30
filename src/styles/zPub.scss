@@ -526,49 +526,34 @@ $abbrev in ( m: margin,
 //  }
 //}
 // 药品row
-.z-med-item{
-  min-height: 32px;
-  //height: 32px;
-  color: #333;
-  line-height: 32px;
-  border-right: 1px solid #ebeef5;
-  //border-bottom: 1px solid #ebeef5;
-  padding: 5px;
-  flex-shrink: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  .z-med-name{
-    width: 100%;
-    padding-left: 5px;
-    height: 32px;
-    line-height: 32px;
-    color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  &.active{
-    background: #FFFFE6 !important;
-  }
-  .z-input-small{
-    width: 50px;
-  }
-  input[type="number"]{
-    padding: 0 0 0 4px;
-  }
-  .el-input.changed, .el-select.changed, .cat-table-select.changed{
-    .el-input__inner{
-      border-color: #E6A23C;
-    }
-  }
-  .el-input.invalid, .el-select.invalid, .cat-table-select.invalid{
-    .el-input__inner{
-      border-color: #F56C6C;
-    }
-  }
-  .el-input__inner{
-    height: 32px;
-    line-height: 32px;
+.z-table-hasRight{
+  .el-table--border td, .el-table--border th{
+    border-right: 1px solid #EBEEF5 !important;
   }
 }
+.z-table-noPadding{
+
+}
+.med-table{
+  .el-table__body-wrapper{
+    .el-table__row{
+    }
+    td,th{
+      padding: 0 !important;
+      .cell{
+        min-height: 32px;
+        padding: 0 !important;
+      }
+    }
+  }
+  .z-med-name{
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  .el-input__inner{
+    background: #FFFFE6;
+  }
+}
+
