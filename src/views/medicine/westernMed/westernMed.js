@@ -8,9 +8,6 @@ const presItemCopy = [
   ]
 ];
 const itemActiveCopy = { groupIndex: 0, itemIndex: 0 };
-const groupItemCopy = [
-  { groupIndex: 0 }
-];
 export default {
   name: "westernMed",
   components: {
@@ -18,12 +15,9 @@ export default {
   },
   data() {
     return {
-      presList: [{ name: '普通院内处方' }], // 处方列表
+      presList: [{ name: '普通院内处方', groupList: cloneObj(presItemCopy) }], // 处方列表
       presIndex: 0,
       activeNames: [0],
-      groupList: {
-        0: cloneObj(presItemCopy) // 属性名是处方下表，属性值是具体某个处方的内容
-      },
       itemActive: cloneObj(itemActiveCopy),
       form: {
         dataList: [
@@ -118,6 +112,12 @@ export default {
 
   },
   methods: {
+    starAdd({ column }) {
+      const nameArr = ['药名名称', '用量', '剂量', '配药数量', '用法', '给药方式', '用药天数', '用药次数'];
+      if(nameArr.includes(column.label)) {
+        return 'star';
+      }
+    },
     // 行单元颜色
     rowStyle({row}) {
       const { itemActive } = this;
@@ -174,9 +174,9 @@ export default {
     // 表格列表切换
     tableRowChange(e, groupIndex, index) {
       if(e) {
-        const { groupList, presIndex } = this;
+        const { presIndex, presList } = this;
         this.keyArr.forEach(ev => {
-          this.$set(groupList[presIndex][groupIndex][index], ev, e[ev])
+          this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
           // groupList[presIndex][groupIndex][index][ev] = e[ev]
         })
         // console.log(this.$refs['my-form'].validateWithInfo())
@@ -199,56 +199,109 @@ export default {
       this.itemActive = cloneObj(itemActiveCopy);
       this.rowColName = '';
       this.$refs['my-form'].reset();
+      this.countActiveNames();
+    },
+    // 计算activeNames
+    countActiveNames() {
+      const {presIndex, presList} = this;
+      const activeNames = [];
+      presList[presIndex].groupList.forEach((ev, i) => {
+        activeNames.push(i)
+      })
+      this.activeNames = activeNames;
     },
     // 处方添加
     presAddClick() {
-      this.presList.push({ name: '普通院内处方'});
+      this.presList.push({ name: '普通院内处方', groupList: cloneObj(presItemCopy)});
       this.presIndex = this.presList.length - 1;
-      this.groupList[this.presIndex] = cloneObj(presItemCopy);
       this.reset()
     },
     // 处方删除
     presDelClick(index) {
-      this.presList.splice(index, 1);
-      delete this.groupList[index];
-      // 当删除当前选中的值时
-      if(this.presIndex === index) {
-        this.presIndex = this.presList.length - 1
+      if(index <= this.presIndex) {
+        this.presIndex = this.presList.length - 2;
       }
+      this.presList.splice(index, 1);
+      this.delAllJudge();
     },
     // 处方下标点击
     presIndexClick(index) {
       this.presIndex = index;
       this.reset()
     },
+    // 计算groupIndex
+    countGroupIndex() {
+      const {presIndex, presList} = this;
+      presList[presIndex].groupList.forEach((ev, groupIndex) => {
+        ev.forEach(ev1 => {
+          console.log(ev1)
+          ev1.groupIndex = groupIndex;
+        })
+      })
+    },
+    // 所有删除之后进行判断
+    delAllJudge() {
+      const {itemActive, presIndex, presList} = this;
+      if(presList.length === 0) {
+        setTimeout(() => {
+          this.presAddClick();
+        }, 300)
+      }else {
+        const groupList = presList[presIndex].groupList;
+        // 药品组为0时
+        if(groupList.length === 0) {
+          this.presDelClick(presIndex)
+        }else {
+          if(!groupList[itemActive.groupIndex]) {
+            itemActive.groupIndex--
+          }
+          // // 如果行删除完
+          if(groupList[itemActive.groupIndex].length === 0) {
+            this.groupDelClick();
+            return
+          }else {
+            if(!groupList[itemActive.groupIndex][itemActive.itemIndex]) {
+              itemActive.itemIndex = groupList[itemActive.groupIndex].length - 1;
+            }
+          }
+          this.countGroupIndex();
+          this.countActiveNames();
+        }
+      }
+    },
     // 新增行
     lineAddClick() {
-      const { itemActive, groupList, presIndex } = this;
-      groupList[presIndex][itemActive.groupIndex].push({ groupIndex: itemActive.groupIndex })
+      const { itemActive, presIndex, presList } = this;
+      presList[presIndex].groupList[itemActive.groupIndex].push({ groupIndex: itemActive.groupIndex })
     },
     // 删除行
     lineDelClick() {
-      const { itemActive, groupList, presIndex } = this;
-      groupList[presIndex][itemActive.groupIndex].splice(itemActive.itemIndex, 1)
+      const { itemActive, presIndex, presList } = this;
+      presList[presIndex].groupList[itemActive.groupIndex].splice(itemActive.itemIndex, 1);
+      this.delAllJudge();
     },
     // 新增组
     groupAddClick() {
-      const { groupList, activeNames, presIndex } = this;
-      const groupIndex = groupList[presIndex].length;
-      groupList[presIndex].push([{ groupIndex }]);
+      const { activeNames, presIndex, presList } = this;
+      const groupList = presList[presIndex].groupList;
+      const groupIndex = groupList.length;
+      groupList.push([{ groupIndex }]);
       // 添加折叠面板
-      activeNames.push(groupList[presIndex].length - 1)
+      activeNames.push(groupIndex)
     },
     // 删除组
     groupDelClick() {
-      const { itemActive, groupList, activeNames, presIndex } = this;
-      groupList[presIndex].splice(itemActive.groupIndex, 1);
-      // 删除折叠面板
-      activeNames.forEach((ev, index) => {
-        if(ev === itemActive.groupIndex) {
-          activeNames.splice(index, 1)
-        }
-      })
+      const { itemActive, presIndex, presList } = this;
+      const groupList = presList[presIndex].groupList;
+      groupList.splice(itemActive.groupIndex, 1);
+      this.delAllJudge();
+      // 判断数组下标变化
+      // 判断是否只剩一组
+      // if(groupList.length > 0) {
+      //   this.itemActive = { groupIndex: 0, itemIndex: 0 }
+      // }else {
+      //   this.presDelClick(this.presIndex);
+      // }
     }
   }
 }

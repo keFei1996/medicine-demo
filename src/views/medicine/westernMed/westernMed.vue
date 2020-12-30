@@ -25,6 +25,7 @@
     <ValidationObserver tag="form" ref="my-form" id="my-form">
       <div class="order-table z-table-hasRight">
         <el-table
+          :header-cell-class-name="starAdd"
           :header-cell-style="{background:'#F5F7FA',color:'#333'}"
           style="width: 100%"
           :height="45"
@@ -104,8 +105,8 @@
             :show-overflow-tooltip="true">
           </el-table-column>
         </el-table>
-        <el-collapse class="my-collapse med-table" v-model="activeNames">
-          <el-collapse-item class="collapse-item" v-for="(group, groupIndex) in groupList[presIndex]" :key="groupIndex" :title="`第${groupIndex+1}组`" :name="groupIndex">
+        <el-collapse class="my-collapse med-table" v-model="activeNames" v-if="presList.length > 0">
+          <el-collapse-item class="collapse-item" v-for="(group, groupIndex) in presList[presIndex].groupList" :key="groupIndex" :title="`第${groupIndex+1}组`" :name="groupIndex">
             <el-table
               :header-cell-style="{background:'#F5F7FA',color:'#333'}"
               style="width: 100%"
