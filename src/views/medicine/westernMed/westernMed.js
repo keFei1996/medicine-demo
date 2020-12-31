@@ -156,11 +156,12 @@ export default {
     // 点击保存
     saveClick() {
       this.$refs['my-form'].validateWithInfo().then(res => {
-        const formDom = document.getElementById('my-form');
-        const errors = formDom.querySelector('.invalid');
-        const input = errors.querySelector('input[type=text]');
-        console.log(input)
-        input.focus()
+        console.log(res)
+        // const formDom = document.getElementById('my-form');
+        // const errors = formDom.querySelector('.invalid');
+        // const input = errors.querySelector('input[type=text]');
+        // console.log(input)
+        // input.focus()
         // console.log(formDom)
         // const errors = formDom.querySelector('.invalid');
         // console.log(errors)
