@@ -19,10 +19,10 @@
       </div>
     </div>
     <div class="pres-list">
-      <div class="pres-item" :class="[ index === presIndex ? 'active' : '' ]" v-for="(item, index) in presList" :key="index" @click="presIndexClick(index)">{{ `${index+1}-${item.name}` }}<span class="z-m-l-5 z-font-bold" @click.stop="presDelClick(index)">X</span></div>
+      <div class="pres-item" :class="[ index === presIndex ? 'active' : '' ]" v-for="(item, index) in form.presList" :key="index" @click="presIndexClick(index)">{{ `${index+1}-${item.name}` }}<span class="z-m-l-5 z-font-bold" @click.stop="presDelClick(index)">X</span></div>
       <div class="pres-item-icon" @click="presAddClick"><i class="el-icon-circle-plus-outline"></i></div>
     </div>
-    <ValidationObserver tag="form" ref="my-form" id="my-form">
+    <el-form ref="my-form" :rules="rules" v-loading="formLoading" :model="form.presList[presIndex]" :show-message="false">
       <div class="order-table z-table-hasRight">
         <el-table
           :header-cell-class-name="starAdd"
@@ -105,8 +105,8 @@
             :show-overflow-tooltip="true">
           </el-table-column>
         </el-table>
-        <el-collapse class="my-collapse med-table" v-model="activeNames" v-if="presList.length > 0">
-          <el-collapse-item class="collapse-item" v-for="(group, groupIndex) in presList[presIndex].groupList" :key="groupIndex" :title="`第${groupIndex+1}组`" :name="groupIndex">
+        <el-collapse class="my-collapse med-table" v-model="activeNames" v-if="form.presList.length > 0">
+          <el-collapse-item class="collapse-item" v-for="(group, groupIndex) in form.presList[presIndex].groupList" :key="groupIndex" :title="`第${groupIndex+1}组`" :name="groupIndex">
             <el-table
               :header-cell-style="{background:'#F5F7FA',color:'#333'}"
               style="width: 100%"
@@ -134,18 +134,21 @@
                 prop="medId"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" rules="required" v-slot="{ errors, classes }" name="medId">
-                    <div class="med-validate-item" :class="classes">
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.medId`"
+                    :rules="{ required: true, message: '请选择药品', trigger: 'change' }">
+                    <div class="med-validate-item">
                       <cat-table-select
                         v-model="row.medId"
                         :data="drugList"
                         :columns="medColumns"
                         :props="medProps"
                         @rowChange="tableRowChange($event, groupIndex, $index)"
-                        v-if="rowColName === `medId${groupIndex}${$index}`"></cat-table-select>
+                        :ref="`groupList.${groupIndex}.${$index}.medId`"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.medId`"></cat-table-select>
                       <span class="z-med-name" v-else>{{ row.medName }}</span>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -185,15 +188,17 @@
                 width="80px"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" rules="required" v-slot="{ errors, classes }" name="useRatio">
-                    <div class="med-validate-item" :class="classes">
-                      <el-input type="number" class="z-input-small" size="small" v-model="row.useRatio" v-if="rowColName === `useRatio${groupIndex}${$index}`"/>
-                      <div class="z-med-name" v-else>
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.useRatio`"
+                    :rules="{ required: true, message: '用量必填且大于0', validator: validateDigits, trigger: 'change' }">
+                    <div class="med-validate-item">
+                      <el-input type="number" class="z-input-small" size="small" v-model="row.useRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.useRatio`" :ref="`groupList.${groupIndex}.${$index}.useRatio`"/>
+                      <div class="z-med-name text-right" v-else>
                         <span>{{ row.useRatio }}</span>
-                        <span>{{ row.useUnit }}</span>
+                        <span v-if="row.useRatio">{{ row.useUnit }}</span>
                       </div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -202,15 +207,17 @@
                 width="80px"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" rules="required" v-slot="{ errors, classes }" name="doseRatio">
-                    <div class="med-validate-item" :class="classes">
-                      <el-input type="number" class="z-input-small" size="small" v-model="row.doseRatio" v-if="rowColName === `doseRatio${groupIndex}${$index}`"/>
-                      <div class="z-med-name" v-else>
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.doseRatio`"
+                    :rules="{ required: true, message: '剂量必填且大于0', validator: validateDigits, trigger: 'change' }">
+                    <div class="med-validate-item">
+                      <el-input type="number" class="z-input-small" size="small" v-model="row.doseRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.doseRatio`" :ref="`groupList.${groupIndex}.${$index}.doseRatio`"/>
+                      <div class="z-med-name text-right" v-else>
                         <span>{{ row.doseRatio }}</span>
                         <span>{{ row.doseUnit }}</span>
                       </div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -218,19 +225,23 @@
                 label="用法"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" :rules="`${$index === 0 ? 'required' : ''}`" v-slot="{ errors, classes }" >
-                    <div class="med-validate-item" :class="classes">
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.usage`"
+                    :rules=" $index === 0 ? { required: true, message: '请选择用法', trigger: 'change' } : {}">
+                    <div class="med-validate-item">
                       <cat-table-select
                         v-model="row.usage"
                         :data="usageList"
                         :columns="usageColumns"
                         :props="usageProps"
-                        v-if="rowColName === `usage${groupIndex}${$index}` && $index === 0"></cat-table-select>
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.usage` && $index === 0"
+                        :ref="`groupList.${groupIndex}.${$index}.usage`"
+                        @rowChange="usageChange($event, groupIndex, $index)"></cat-table-select>
                       <div class="z-med-name" v-else>
                         <span>{{ row.usage }}</span>
                       </div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -238,19 +249,22 @@
                 label="给药方式"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" :rules="`${$index === 0 ? 'required' : ''}`" v-slot="{ errors, classes }" name="mode">
-                    <div class="med-validate-item" :class="classes">
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.mode`"
+                    :rules=" $index === 0 ? { required: true, message: '请选择用药方式', trigger: 'change' } : {}">
+                    <div class="med-validate-item">
                       <cat-table-select
                         v-model="row.mode"
                         :data="modeList"
                         :columns="usageColumns"
                         :props="usageProps"
-                        v-if="rowColName === `mode${groupIndex}${$index}`  && $index === 0"></cat-table-select>
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.mode` && $index === 0"
+                        :ref="`groupList.${groupIndex}.${$index}.mode`"></cat-table-select>
                       <div class="z-med-name" v-else>
                         <span>{{ row.mode }}</span>
                       </div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -259,14 +273,16 @@
                 width="80px"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" :rules="`${$index === 0 ? 'required' : ''}`" v-slot="{ errors, classes }" name="day" >
-                    <div class="med-validate-item" :class="classes">
-                      <el-input type="number" size="small" v-model="row.day" v-if="rowColName === `day${groupIndex}${$index}`  && $index === 0"/>
-                      <div class="z-med-name" v-else>
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.day`"
+                    :rules=" $index === 0 ? { required: true, message: '用药天数必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
+                    <div class="med-validate-item">
+                      <el-input type="number" size="small" v-model="row.day" v-if="rowColName === `groupList.${groupIndex}.${$index}.day` && $index === 0" :ref="`groupList.${groupIndex}.${$index}.day`"/>
+                      <div class="z-med-name text-right" v-else>
                         <span>{{ row.day }}</span>
                       </div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -275,12 +291,14 @@
                 width="80px"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" :rules="`${$index === 0 ? 'required' : ''}`" v-slot="{ errors, classes }" name="rate">
-                    <div class="med-validate-item" :class="classes">
-                      <el-input type="number" size="small" v-model="row.rate" v-if="rowColName === `rate${groupIndex}${$index}`  && $index === 0"/>
-                      <div class="z-med-name" v-else><span>{{ row.rate }}</span></div>
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.rate`"
+                    :rules=" $index === 0 ? { required: true, message: '用药次数必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
+                    <div class="med-validate-item">
+                      <el-input type="number" size="small" v-model="row.rate" v-if="rowColName === `groupList.${groupIndex}.${$index}.rate`  && $index === 0" :ref="`groupList.${groupIndex}.${$index}.rate`"/>
+                      <div class="z-med-name text-right" v-else><span>{{ row.rate }}</span></div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -289,12 +307,14 @@
                 width="80px"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" rules="required" v-slot="{ errors, classes }" name="presRatio">
-                    <div class="med-validate-item" :class="classes">
-                      <el-input class="z-input-small" type="number" size="small" v-model="row.presRatio" v-if="rowColName === `presRatio${groupIndex}${$index}`"/>
-                      <div class="z-med-name" v-else><span>{{ row.presRatio }}</span><span>{{ row.presUnit }}</span></div>
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.presRatio`"
+                    :rules=" $index === 0 ? { required: true, message: '配药数量必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
+                    <div class="med-validate-item">
+                      <el-input class="z-input-small" type="number" size="small" v-model="row.presRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.presRatio`" :ref="`groupList.${groupIndex}.${$index}.presRatio`"/>
+                      <div class="z-med-name text-right" v-else><span>{{ row.presRatio }}</span><span v-if="row.presRatio">{{ row.presUnit }}</span></div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
               <el-table-column
@@ -302,21 +322,23 @@
                 label="备注"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
-                  <ValidationProvider tag="div" class="med-validate-item" v-slot="{ errors, classes }" name="remark">
-                    <div class="med-validate-item" :class="classes">
-                      <el-select :class="classes" v-model="row.remarkName" clearable placeholder="请选择" size="small" v-if="rowColName === `remark${groupIndex}${$index}`">
+                  <el-form-item
+                    :prop="`groupList.${groupIndex}.${$index}.remark`"
+                    :rules="{}">
+                    <div class="med-validate-item">
+                      <el-select v-model="row.remark" clearable placeholder="请选择" size="small" v-if="rowColName === `groupList.${groupIndex}.${$index}.remark`" :ref="`groupList.${groupIndex}.${$index}.remark`">
                         <el-option v-for="item in remarkList" :key="item.code" :label="item.name" :value="item.name"></el-option>
                       </el-select>
-                      <div class="z-med-name" v-else>{{ row.remarkName }}</div>
+                      <div class="z-med-name" v-else>{{ row.remark }}</div>
                     </div>
-                  </ValidationProvider>
+                  </el-form-item>
                 </template>
               </el-table-column>
             </el-table>
           </el-collapse-item>
         </el-collapse>
       </div>
-    </ValidationObserver>
+    </el-form>
   </div>
 </template>
 

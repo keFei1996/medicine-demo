@@ -131,6 +131,27 @@
   min-width: 1140px;
   height: 100vh;
   overflow: auto;
+  ::v-deep .el-form-item__content{
+    line-height: unset;
+  }
+  .el-form-item.is-success{
+    color: #c00000;
+    &::before{
+      content: '';
+      display: block;
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-color: transparent #C00000;
+      border-width: 0 8px 8px 0;
+      border-style: solid;
+      right: 4px;
+      top: 4px;
+    }
+  }
+  .el-form-item.is-error{
+    background: #FFBEC9;
+  }
 }
 .med-validate-item{
   position: relative;

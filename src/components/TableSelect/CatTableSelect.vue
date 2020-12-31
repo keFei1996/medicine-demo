@@ -272,10 +272,10 @@ export default {
     selectRow (val) {
       const row = this.findRowByKey(val);
       // 判断用药库存
-      if(row && row.stockNum === 0) {
-        this.$message.error('当前药品库存为0');
-        return
-      }
+      // if(row && row.stockNum === 0) {
+      //   this.$message.error('当前药品库存为0');
+      //   return
+      // }
       this.selectedLabel = row ? row[this.props.label] : ''
       this.visible = false
       this.$emit('input', val);

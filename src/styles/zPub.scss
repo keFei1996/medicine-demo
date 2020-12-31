@@ -557,9 +557,10 @@ th.star{
   }
   .z-med-name{
     height: 32px;
-    display: flex;
-    align-items: center;
-    padding: 10px;
+    line-height: 32px;
+    padding: 0 10px;
+    //display: flex;
+    //align-items: center;
   }
   .el-input__inner{
     background: #FFFFE6;

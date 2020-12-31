@@ -15,15 +15,14 @@ export default {
   },
   data() {
     return {
-      presList: [{ name: '普通院内处方', groupList: cloneObj(presItemCopy) }], // 处方列表
+      form: {
+        presList: [{ name: '普通院内处方', groupList: cloneObj(presItemCopy) }], // 处方列表
+      },
+      rules: {},
+      formLoading: false,
       presIndex: 0,
       activeNames: [0],
       itemActive: cloneObj(itemActiveCopy),
-      form: {
-        dataList: [
-          {  }
-        ]
-      },
       drugList,
       medColumns: [
         {
@@ -71,11 +70,11 @@ export default {
       rowColName: '',
       keyArr: ['medName', 'formName', 'spec', 'factoryName', 'useUnit', 'doseUnit', 'doseRatio', 'useRatio', 'presRatio', 'presUnit'],
       usageList: [
-        { code: 'qd', name: '一日一次' },
-        { code: 'bid', name: '一日二次' },
-        { code: 'tid', name: '一日三次' },
-        { code: 'qid', name: '一日四次' },
-        { code: 'qm', name: '早上一次' }
+        { code: 'qd', name: '一日一次', day: 1, num: 1 },
+        { code: 'bid', name: '一日二次', day: 1, num: 2 },
+        { code: 'tid', name: '一日三次', day: 1, num: 3 },
+        { code: 'qid', name: '一日四次', day: 1, num: 4 },
+        { code: 'qm', name: '早上一次', day: 1, num: 1 }
       ],
       usageColumns: [
         {
@@ -112,6 +111,39 @@ export default {
 
   },
   methods: {
+    // 用法改变
+    usageChange(e, groupIndex, index) {
+      if(e) {
+        const { presIndex, form } = this;
+        const presList = form.presList;
+        this.$set(presList[presIndex]['groupList'][groupIndex][index], 'day', e['day'])
+        this.$set(presList[presIndex]['groupList'][groupIndex][index], 'rate', e['num'])
+        const formDom = this.$refs['my-form']
+        formDom.validateField(`groupList.${groupIndex}.${index}.day`);
+        formDom.validateField(`groupList.${groupIndex}.${index}.rate`);
+        // const activeKey = `groupList.${groupIndex}.${index}.mode`;
+        // this.rowColName = activeKey;
+        // this.$nextTick(() => {
+        //   this.$refs[activeKey][0].visible = true;
+        // })
+      }
+    },
+    // 大于0的正整数
+    validateDigits(rule, value, callback) {
+      if (value === '') {
+        callback(new Error(rule.name || '请输入数量'))
+      } else {
+        if(value > 0) {
+          callback()
+        }else{
+          callback(new Error('请输入大于0的整数'))
+        }
+      }
+    },
+    rulesReturn(str1, str2) {
+      return { required: true, message: '', trigger: 'change' }
+    },
+    // 表格头加入必填
     starAdd({ column }) {
       const nameArr = ['药名名称', '用量', '剂量', '配药数量', '用法', '给药方式', '用药天数', '用药次数'];
       if(nameArr.includes(column.label)) {
@@ -133,7 +165,7 @@ export default {
     },
     // 单元格颜色
     cellStyle({row, column}) {
-      const rowColName = `${column.property}${row.groupIndex}${row.index}`;
+      const rowColName =  `groupList.${row.groupIndex}.${row.index}.${column.property}`;
       if(rowColName === this.rowColName) {
         return {
           background: '#FFFFE6'
@@ -150,24 +182,43 @@ export default {
     // 单元格点击
     cellClick(row, column, cell, event) {
       this.itemActive = { groupIndex: row.groupIndex, itemIndex: row.index };
-      this.rowColName = `${column.property}${row.groupIndex}${row.index}`;
+      // this.rowColName = `${column.property}${row.groupIndex}${row.index}`;
+      this.rowColName = `groupList.${row.groupIndex}.${row.index}.${column.property}`;
       event.stopPropagation();
     },
     // 点击保存
-    saveClick() {
-      this.$refs['my-form'].validateWithInfo().then(res => {
-        console.log(res)
-        // const formDom = document.getElementById('my-form');
-        // const errors = formDom.querySelector('.invalid');
-        // const input = errors.querySelector('input[type=text]');
-        // console.log(input)
-        // input.focus()
-        // console.log(formDom)
-        // const errors = formDom.querySelector('.invalid');
-        // console.log(errors)
+    saveClick(event) {
+      return new Promise((resolve, reject) => {
+        const formDom = this.$refs['my-form']
+        formDom.validate((valid, object) => {
+          if(valid) {
+            formDom.clearValidate();
+            resolve()
+          }else {
+            formDom.clearValidate();
+            const keys = Object.keys(object)
+            Object.keys(object).forEach(key => {
+              formDom.validateField(key)
+            })
+            const activeKey = keys[0];
+            console.log('activeKey', activeKey)
+            this.rowColName = activeKey;
+            this.$nextTick(() => {
+              event.stopPropagation();
+              const name = activeKey.split('.')[3];
+              const selectArr = ['medId', 'usage', 'mode'];
+              const activeDom =  this.$refs[activeKey];
+              console.log('activeDom', activeDom)
+              if(selectArr.includes(name)) {
+                activeDom[0].visible = true;
+              }else {
+                activeDom[0].focus();
+              }
+              this.$message.error(object[activeKey][0].message)
+            })
+          }
+        })
       })
-      // console.log(this.$refs['my-form'])
-      // this.$refs['my-form'].reset();
     },
     boxClick(e) {
       this.rowColName = ''
@@ -175,16 +226,28 @@ export default {
     // 表格列表切换
     tableRowChange(e, groupIndex, index) {
       if(e) {
-        const { presIndex, presList } = this;
-        this.keyArr.forEach(ev => {
-          this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
-          // groupList[presIndex][groupIndex][index][ev] = e[ev]
-        })
-        // console.log(this.$refs['my-form'].validateWithInfo())
-        // setTimeout(() => {
-        //   this.$refs['my-form'].validateWithInfo()
-        // })
-        // this.$set(groupList[presIndex][groupIndex][index], 'dose', e.doseRatio)
+        if(e.stockNum === 0) {
+          this.$message.error('当前药品库存为0');
+          this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+        }else {
+          const { presIndex, form } = this;
+          const presList = form.presList;
+          const groupItem = presList[presIndex].groupList[groupIndex];
+          for(let i=0; i< groupItem.length; i++) {
+            if(groupItem[i].medName === e.medName) {
+              this.$message.error('该药品已经存在');
+              this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+              return;
+            }
+          }
+          this.keyArr.forEach(ev => {
+            this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
+          })
+          const formDom = this.$refs['my-form']
+          formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`)
+        }
       }
     },
     // ifrmae发送消息
@@ -199,12 +262,13 @@ export default {
     reset() {
       this.itemActive = cloneObj(itemActiveCopy);
       this.rowColName = '';
-      this.$refs['my-form'].reset();
+      this.$refs['my-form'].clearValidate();
       this.countActiveNames();
     },
     // 计算activeNames
     countActiveNames() {
-      const {presIndex, presList} = this;
+      const {presIndex} = this;
+      const presList = this.form.presList;
       const activeNames = [];
       presList[presIndex].groupList.forEach((ev, i) => {
         activeNames.push(i)
@@ -213,16 +277,18 @@ export default {
     },
     // 处方添加
     presAddClick() {
-      this.presList.push({ name: '普通院内处方', groupList: cloneObj(presItemCopy)});
-      this.presIndex = this.presList.length - 1;
+      const presList = this.form.presList;
+      presList.push({ name: '普通院内处方', groupList: cloneObj(presItemCopy)});
+      this.presIndex = presList.length - 1;
       this.reset()
     },
     // 处方删除
     presDelClick(index) {
+      const presList = this.form.presList;
       if(index <= this.presIndex) {
-        this.presIndex = this.presList.length - 2;
+        this.presIndex = presList.length - 2;
       }
-      this.presList.splice(index, 1);
+      presList.splice(index, 1);
       this.delAllJudge();
     },
     // 处方下标点击
@@ -232,7 +298,8 @@ export default {
     },
     // 计算groupIndex
     countGroupIndex() {
-      const {presIndex, presList} = this;
+      const {presIndex, form} = this;
+      const presList = form.presList;
       presList[presIndex].groupList.forEach((ev, groupIndex) => {
         ev.forEach(ev1 => {
           console.log(ev1)
@@ -242,7 +309,8 @@ export default {
     },
     // 所有删除之后进行判断
     delAllJudge() {
-      const {itemActive, presIndex, presList} = this;
+      const {itemActive, presIndex, form} = this;
+      const presList = form.presList;
       if(presList.length === 0) {
         setTimeout(() => {
           this.presAddClick();
@@ -271,19 +339,31 @@ export default {
       }
     },
     // 新增行
-    lineAddClick() {
-      const { itemActive, presIndex, presList } = this;
-      presList[presIndex].groupList[itemActive.groupIndex].push({ groupIndex: itemActive.groupIndex })
+    async lineAddClick(event) {
+      await this.saveClick(event);
+      const { itemActive, presIndex, form } = this;
+      const presList = form.presList;
+      const groupItem = presList[presIndex].groupList[itemActive.groupIndex];
+      groupItem.push({ groupIndex: itemActive.groupIndex });
+      const activeKey = `groupList.${itemActive.groupIndex}.${groupItem.length-1}.medId`;
+      this.rowColName = activeKey;
+      // 拉开选择药品下拉框
+      this.$nextTick(() => {
+        event.stopPropagation();
+        this.$refs[activeKey][0].visible = true;
+      })
     },
     // 删除行
     lineDelClick() {
-      const { itemActive, presIndex, presList } = this;
+      const { itemActive, presIndex, form } = this;
+      const presList = form.presList;
       presList[presIndex].groupList[itemActive.groupIndex].splice(itemActive.itemIndex, 1);
       this.delAllJudge();
     },
     // 新增组
     groupAddClick() {
-      const { activeNames, presIndex, presList } = this;
+      const { activeNames, presIndex, form } = this;
+      const presList = form.presList;
       const groupList = presList[presIndex].groupList;
       const groupIndex = groupList.length;
       groupList.push([{ groupIndex }]);
@@ -292,17 +372,11 @@ export default {
     },
     // 删除组
     groupDelClick() {
-      const { itemActive, presIndex, presList } = this;
+      const { itemActive, presIndex, form } = this;
+      const presList = form.presList;
       const groupList = presList[presIndex].groupList;
       groupList.splice(itemActive.groupIndex, 1);
       this.delAllJudge();
-      // 判断数组下标变化
-      // 判断是否只剩一组
-      // if(groupList.length > 0) {
-      //   this.itemActive = { groupIndex: 0, itemIndex: 0 }
-      // }else {
-      //   this.presDelClick(this.presIndex);
-      // }
     }
   }
 }
