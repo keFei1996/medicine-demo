@@ -89,6 +89,10 @@ export default {
         }
       ],
       usageProps: {
+        key: 'code',
+        label: 'name'
+      },
+      modeProps: {
         key: 'name',
         label: 'name'
       },
@@ -111,26 +115,65 @@ export default {
 
   },
   methods: {
+    // 药名切换
+    tableRowChange(e, groupIndex, index) {
+      if(e) {
+        if(e.stockNum === 0) {
+          this.$message.error('当前药品库存为0');
+          this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+        }else {
+          const { presIndex, form } = this;
+          const presList = form.presList;
+          const groupItem = presList[presIndex].groupList[groupIndex];
+          for(let i=0; i< groupItem.length; i++) {
+            if(groupItem[i].medName === e.medName) {
+              this.$message.error('该药品已经存在');
+              this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+              return;
+            }
+          }
+          this.keyArr.forEach(ev => {
+            this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
+          })
+          const formDom = this.$refs['my-form']
+          formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.medId`);
+          const activeKey = `groupList.${groupIndex}.${index}.useRatio`;
+          this.rowColName = activeKey;
+          this.$nextTick(() => {
+            this.$refs[activeKey][0].focus();
+          })
+        }
+      }
+    },
     // 用法改变
     usageChange(e, groupIndex, index) {
       if(e) {
         const { presIndex, form } = this;
         const presList = form.presList;
-        this.$set(presList[presIndex]['groupList'][groupIndex][index], 'day', e['day'])
-        this.$set(presList[presIndex]['groupList'][groupIndex][index], 'rate', e['num'])
-        const formDom = this.$refs['my-form']
+        const medItem = presList[presIndex]['groupList'][groupIndex][index];
+        if(medItem.usageName === e.name) {
+          return
+        }
+        this.$set(medItem, 'usageName', e['name'])
+        this.$set(medItem, 'day', e['day'])
+        this.$set(medItem, 'rate', e['num'])
+        const formDom = this.$refs['my-form'];
+        formDom.validateField(`groupList.${groupIndex}.${index}.usage`);
         formDom.validateField(`groupList.${groupIndex}.${index}.day`);
         formDom.validateField(`groupList.${groupIndex}.${index}.rate`);
-        // const activeKey = `groupList.${groupIndex}.${index}.mode`;
-        // this.rowColName = activeKey;
-        // this.$nextTick(() => {
-        //   this.$refs[activeKey][0].visible = true;
-        // })
+        const activeKey = `groupList.${groupIndex}.${index}.mode`;
+        this.rowColName = activeKey;
+        this.$nextTick(() => {
+          this.$refs[activeKey][0].visible = true;
+        })
       }
     },
     // 大于0的正整数
     validateDigits(rule, value, callback) {
-      if (value === '') {
+      if (!value) {
         callback(new Error(rule.name || '请输入数量'))
       } else {
         if(value > 0) {
@@ -189,6 +232,10 @@ export default {
     // 点击保存
     saveClick(event) {
       return new Promise((resolve, reject) => {
+        if(this.form.presList.length === 0) {
+          resolve()
+          return
+        }
         const formDom = this.$refs['my-form']
         formDom.validate((valid, object) => {
           if(valid) {
@@ -223,33 +270,6 @@ export default {
     boxClick(e) {
       this.rowColName = ''
     },
-    // 表格列表切换
-    tableRowChange(e, groupIndex, index) {
-      if(e) {
-        if(e.stockNum === 0) {
-          this.$message.error('当前药品库存为0');
-          this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
-        }else {
-          const { presIndex, form } = this;
-          const presList = form.presList;
-          const groupItem = presList[presIndex].groupList[groupIndex];
-          for(let i=0; i< groupItem.length; i++) {
-            if(groupItem[i].medName === e.medName) {
-              this.$message.error('该药品已经存在');
-              this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
-              return;
-            }
-          }
-          this.keyArr.forEach(ev => {
-            this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
-          })
-          const formDom = this.$refs['my-form']
-          formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
-          formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
-          formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`)
-        }
-      }
-    },
     // ifrmae发送消息
     postMessage() {
       // b页面
@@ -276,23 +296,36 @@ export default {
       this.activeNames = activeNames;
     },
     // 处方添加
-    presAddClick() {
+    async presAddClick(event) {
+      await this.saveClick(event)
       const presList = this.form.presList;
       presList.push({ name: '普通院内处方', groupList: cloneObj(presItemCopy)});
       this.presIndex = presList.length - 1;
-      this.reset()
+      this.reset();
+      this.openMedSelect(event);
     },
     // 处方删除
-    presDelClick(index) {
-      const presList = this.form.presList;
-      if(index <= this.presIndex) {
-        this.presIndex = presList.length - 2;
-      }
-      presList.splice(index, 1);
-      this.delAllJudge();
+    presDelClick(event, index) {
+      this.$confirm('您是否确认删除该处方？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(() => {
+        const presList = this.form.presList;
+        if(index <= this.presIndex) {
+          this.presIndex = presList.length - 2;
+        }
+        presList.splice(index, 1);
+        this.delAllJudge(event);
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除操作'
+        })
+      })
     },
     // 处方下标点击
-    presIndexClick(index) {
+    async presIndexClick(event, index) {
+      await this.saveClick(event);
       this.presIndex = index;
       this.reset()
     },
@@ -308,12 +341,12 @@ export default {
       })
     },
     // 所有删除之后进行判断
-    delAllJudge() {
+    delAllJudge(event) {
       const {itemActive, presIndex, form} = this;
       const presList = form.presList;
       if(presList.length === 0) {
         setTimeout(() => {
-          this.presAddClick();
+          this.presAddClick(event);
         }, 300)
       }else {
         const groupList = presList[presIndex].groupList;
@@ -343,9 +376,40 @@ export default {
       await this.saveClick(event);
       const { itemActive, presIndex, form } = this;
       const presList = form.presList;
-      const groupItem = presList[presIndex].groupList[itemActive.groupIndex];
-      groupItem.push({ groupIndex: itemActive.groupIndex });
-      const activeKey = `groupList.${itemActive.groupIndex}.${groupItem.length-1}.medId`;
+      const groupList = presList[presIndex].groupList;
+      const groupIndex = itemActive.groupIndex;
+      const groupItem = groupList[groupIndex];
+      groupItem.push({ groupIndex });
+      this.itemActive = { groupIndex, itemIndex: groupList[groupIndex].length - 1 };
+      this.openMedSelect(event);
+    },
+    // 删除行
+    lineDelClick(event) {
+      const { itemActive, presIndex, form } = this;
+      const presList = form.presList;
+      presList[presIndex].groupList[itemActive.groupIndex].splice(itemActive.itemIndex, 1);
+      this.delAllJudge(event);
+    },
+    // 新增组
+    async groupAddClick(event) {
+      await this.saveClick(event);
+      const { activeNames, presIndex, form } = this;
+      const presList = form.presList;
+      const groupList = presList[presIndex].groupList;
+      const groupIndex = groupList.length;
+      groupList.push([{ groupIndex }]);
+      // 添加折叠面板
+      activeNames.push(groupIndex);
+      this.itemActive = { groupIndex: groupList.length-1, itemIndex: 0 };
+      this.openMedSelect(event)
+    },
+    // 打开药品选择框
+    openMedSelect(event) {
+      const { presIndex, form } = this;
+      const presList = form.presList;
+      const groupList = presList[presIndex].groupList;
+      const groupLastIndex = groupList.length - 1;
+      const activeKey = `groupList.${groupLastIndex}.${groupList[groupLastIndex].length - 1}.medId`;
       this.rowColName = activeKey;
       // 拉开选择药品下拉框
       this.$nextTick(() => {
@@ -353,30 +417,23 @@ export default {
         this.$refs[activeKey][0].visible = true;
       })
     },
-    // 删除行
-    lineDelClick() {
-      const { itemActive, presIndex, form } = this;
-      const presList = form.presList;
-      presList[presIndex].groupList[itemActive.groupIndex].splice(itemActive.itemIndex, 1);
-      this.delAllJudge();
-    },
-    // 新增组
-    groupAddClick() {
-      const { activeNames, presIndex, form } = this;
-      const presList = form.presList;
-      const groupList = presList[presIndex].groupList;
-      const groupIndex = groupList.length;
-      groupList.push([{ groupIndex }]);
-      // 添加折叠面板
-      activeNames.push(groupIndex)
-    },
     // 删除组
-    groupDelClick() {
-      const { itemActive, presIndex, form } = this;
-      const presList = form.presList;
-      const groupList = presList[presIndex].groupList;
-      groupList.splice(itemActive.groupIndex, 1);
-      this.delAllJudge();
+    groupDelClick(event) {
+      this.$confirm('您是否确认删除该分组？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(() => {
+        const { itemActive, presIndex, form } = this;
+        const presList = form.presList;
+        const groupList = presList[presIndex].groupList;
+        groupList.splice(itemActive.groupIndex, 1);
+        this.delAllJudge(event);
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除操作'
+        })
+      })
     }
   }
 }

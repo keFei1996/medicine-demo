@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="pres-list">
-      <div class="pres-item" :class="[ index === presIndex ? 'active' : '' ]" v-for="(item, index) in form.presList" :key="index" @click="presIndexClick(index)">{{ `${index+1}-${item.name}` }}<span class="z-m-l-5 z-font-bold" @click.stop="presDelClick(index)">X</span></div>
+      <div class="pres-item" :class="[ index === presIndex ? 'active' : '' ]" v-for="(item, index) in form.presList" :key="index" @click="presIndexClick($event, index)">{{ `${index+1}-${item.name}` }}<span class="z-m-l-5 z-font-bold" @click.stop="presDelClick($event, index)">X</span></div>
       <div class="pres-item-icon" @click="presAddClick"><i class="el-icon-circle-plus-outline"></i></div>
     </div>
     <el-form ref="my-form" :rules="rules" v-loading="formLoading" :model="form.presList[presIndex]" :show-message="false">
@@ -112,6 +112,7 @@
               style="width: 100%"
               :show-header="false"
               border
+              row-key="medId"
               :data="group"
               @cell-click="cellClick"
               :row-class-name="rowClassName"
@@ -214,7 +215,7 @@
                       <el-input type="number" class="z-input-small" size="small" v-model="row.doseRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.doseRatio`" :ref="`groupList.${groupIndex}.${$index}.doseRatio`"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ row.doseRatio }}</span>
-                        <span>{{ row.doseUnit }}</span>
+                        <span v-if="row.doseRatio">{{ row.doseUnit }}</span>
                       </div>
                     </div>
                   </el-form-item>
@@ -238,7 +239,7 @@
                         :ref="`groupList.${groupIndex}.${$index}.usage`"
                         @rowChange="usageChange($event, groupIndex, $index)"></cat-table-select>
                       <div class="z-med-name" v-else>
-                        <span>{{ row.usage }}</span>
+                        <span>{{ $index === 0 ? row.usageName : '-' }}</span>
                       </div>
                     </div>
                   </el-form-item>
@@ -257,11 +258,11 @@
                         v-model="row.mode"
                         :data="modeList"
                         :columns="usageColumns"
-                        :props="usageProps"
+                        :props="modeProps"
                         v-if="rowColName === `groupList.${groupIndex}.${$index}.mode` && $index === 0"
                         :ref="`groupList.${groupIndex}.${$index}.mode`"></cat-table-select>
                       <div class="z-med-name" v-else>
-                        <span>{{ row.mode }}</span>
+                        <span>{{ $index === 0 ? row.mode : '-' }}</span>
                       </div>
                     </div>
                   </el-form-item>
@@ -279,7 +280,7 @@
                     <div class="med-validate-item">
                       <el-input type="number" size="small" v-model="row.day" v-if="rowColName === `groupList.${groupIndex}.${$index}.day` && $index === 0" :ref="`groupList.${groupIndex}.${$index}.day`"/>
                       <div class="z-med-name text-right" v-else>
-                        <span>{{ row.day }}</span>
+                        <span>{{ $index === 0 ? row.day : '-' }}</span>
                       </div>
                     </div>
                   </el-form-item>
@@ -296,7 +297,7 @@
                     :rules=" $index === 0 ? { required: true, message: '用药次数必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
                     <div class="med-validate-item">
                       <el-input type="number" size="small" v-model="row.rate" v-if="rowColName === `groupList.${groupIndex}.${$index}.rate`  && $index === 0" :ref="`groupList.${groupIndex}.${$index}.rate`"/>
-                      <div class="z-med-name text-right" v-else><span>{{ row.rate }}</span></div>
+                      <div class="z-med-name text-right" v-else><span>{{ $index === 0 ? row.rate : '-' }}</span></div>
                     </div>
                   </el-form-item>
                 </template>
@@ -309,7 +310,7 @@
                 <template slot-scope="{ row, $index }">
                   <el-form-item
                     :prop="`groupList.${groupIndex}.${$index}.presRatio`"
-                    :rules=" $index === 0 ? { required: true, message: '配药数量必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
+                    :rules="{ required: true, message: '配药数量必填且大于0', validator: validateDigits, trigger: 'change' }">
                     <div class="med-validate-item">
                       <el-input class="z-input-small" type="number" size="small" v-model="row.presRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.presRatio`" :ref="`groupList.${groupIndex}.${$index}.presRatio`"/>
                       <div class="z-med-name text-right" v-else><span>{{ row.presRatio }}</span><span v-if="row.presRatio">{{ row.presUnit }}</span></div>
