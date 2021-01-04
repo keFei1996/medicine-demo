@@ -500,6 +500,7 @@ export default {
 .cat-table-select {
   display: inline-block;
   position: relative;
+  width: 100%;
 }
 .cat-table-select>.el-input {
   display: block;

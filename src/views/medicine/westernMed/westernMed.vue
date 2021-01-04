@@ -139,15 +139,95 @@
                     :prop="`groupList.${groupIndex}.${$index}.medId`"
                     :rules="{ required: true, message: '请选择药品', trigger: 'change' }">
                     <div class="med-validate-item">
-                      <cat-table-select
+                      <el-select
+                        size="small"
+                        class="z-select-table"
+                        popper-class="z-select-table-option"
                         v-model="row.medId"
-                        :data="drugList"
-                        :columns="medColumns"
-                        :props="medProps"
-                        @rowChange="tableRowChange($event, groupIndex, $index)"
+                        placeholder="请选择"
+                        filterable
+                        :filter-method="(val) => filterMethod(val, ['medId', 'inputcode1', 'inputcode2'], 'drugList','drugListCopy')"
+                        @visible-change="selectVisible($event, 'medId')"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.medId`"
                         :ref="`groupList.${groupIndex}.${$index}.medId`"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.medId`"></cat-table-select>
-                      <span class="z-med-name" v-else>{{ row.medName }}</span>
+                        @change="selectChange($event, groupIndex, $index, 'medId')">
+                        <template>
+                          <div class="el-select-dropdown__item z-select-header">
+                            <div class="" style="width: 200px">药名名字</div>
+                            <div class="" style="width: 80px">规格</div>
+                            <div class="" style="width: 50px">单位</div>
+                            <div class="" style="width: 60px">剂型</div>
+                            <div class="" style="width: 80px">参考库存</div>
+                            <div class="" style="width: 50px">单价</div>
+                            <div class="" style="width: 90px">产地</div>
+                            <div class="" style="width: 90px">拼</div>
+                            <div class="" style="width: 90px">笔</div>
+                          </div>
+                        </template>
+                        <el-option
+                          v-for="item in drugList"
+                          :key="item.medId"
+                          :label="item.medName"
+                          :value="item.medId">
+                          <div class="" style="width: 200px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.medName" placement="bottom-end" :open-delay="1000">
+                              <span> {{ item.medName }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 80px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.spec" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.spec }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 50px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.presUnit" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.presUnit }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 60px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.formName" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.formName }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 80px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.stockNum + ''" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.stockNum }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 50px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.retaPrice + ''" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.retaPrice }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 90px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.factoryName" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.factoryName }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 90px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.inputcode1" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.inputcode1 }}</span>
+                            </el-tooltip>
+                          </div>
+                          <div class="" style="width: 90px">
+                            <el-tooltip class="tooltip-item" effect="dark" :content="item.inputcode2" placement="bottom-end" :open-delay="1000">
+                              <span>{{ item.inputcode2 }}</span>
+                            </el-tooltip>
+                          </div>
+                        </el-option>
+                      </el-select>
+                      <div class="z-med-name" v-else>
+                        <span>{{ row.medName }}</span>
+                      </div>
+<!--                      <cat-table-select-->
+<!--                        v-model="row.medId"-->
+<!--                        :data="drugList"-->
+<!--                        :columns="medColumns"-->
+<!--                        :props="medProps"-->
+<!--                        @rowChange="tableRowChange($event, groupIndex, $index)"-->
+<!--                        :ref="`groupList.${groupIndex}.${$index}.medId`"-->
+<!--                        v-if="rowColName === `groupList.${groupIndex}.${$index}.medId`"></cat-table-select>-->
+<!--                      <span class="z-med-name" v-else>{{ row.medName }}</span>-->
                     </div>
                   </el-form-item>
                 </template>
@@ -230,14 +310,33 @@
                     :prop="`groupList.${groupIndex}.${$index}.usage`"
                     :rules=" $index === 0 ? { required: true, message: '请选择用法', trigger: 'change' } : {}">
                     <div class="med-validate-item">
-                      <cat-table-select
+                      <el-select
+                        size="small"
+                        class="z-select-table"
+                        popper-class="z-select-table-option"
                         v-model="row.usage"
-                        :data="usageList"
-                        :columns="usageColumns"
-                        :props="usageProps"
+                        placeholder="请选择"
+                        filterable
+                        :filter-method="(val) => filterMethod(val, ['name', 'id'], 'usageList','usageListCopy')"
+                        @visible-change="selectVisible($event, 'usage')"
                         v-if="rowColName === `groupList.${groupIndex}.${$index}.usage` && $index === 0"
                         :ref="`groupList.${groupIndex}.${$index}.usage`"
-                        @rowChange="usageChange($event, groupIndex, $index)"></cat-table-select>
+                        @change="selectChange($event, groupIndex, $index, 'usage')">
+                        <template>
+                          <div class="el-select-dropdown__item z-select-header">
+                            <div class="z-code">代码</div>
+                            <div class="z-name">名称</div>
+                          </div>
+                        </template>
+                        <el-option
+                          v-for="item in usageList"
+                          :key="item.id"
+                          :label="item.name"
+                          :value="item.id">
+                          <div class="z-code">{{ item.id }}</div>
+                          <div class="z-name">{{ item.name }}</div>
+                        </el-option>
+                      </el-select>
                       <div class="z-med-name" v-else>
                         <span>{{ $index === 0 ? row.usageName : '-' }}</span>
                       </div>
@@ -254,15 +353,35 @@
                     :prop="`groupList.${groupIndex}.${$index}.mode`"
                     :rules=" $index === 0 ? { required: true, message: '请选择用药方式', trigger: 'change' } : {}">
                     <div class="med-validate-item">
-                      <cat-table-select
+                      <el-select
+                        size="small"
+                        class="z-select-table"
+                        popper-class="z-select-table-option"
                         v-model="row.mode"
-                        :data="modeList"
-                        :columns="usageColumns"
-                        :props="modeProps"
+                        placeholder="请选择"
+                        filterable
+                        :filter-method="(val) => filterMethod(val, ['name', 'id'], 'modeList', 'modeListCopy')"
+                        @visible-change="selectVisible($event, 'mode')"
                         v-if="rowColName === `groupList.${groupIndex}.${$index}.mode` && $index === 0"
-                        :ref="`groupList.${groupIndex}.${$index}.mode`"></cat-table-select>
+                        :ref="`groupList.${groupIndex}.${$index}.mode`"
+                        @change="selectChange($event, groupIndex, $index, 'mode')">
+                        <template>
+                          <div class="el-select-dropdown__item z-select-header">
+                            <div class="z-code">代码</div>
+                            <div class="z-name">名称</div>
+                          </div>
+                        </template>
+                        <el-option
+                          v-for="item in modeList"
+                          :key="item.id"
+                          :label="item.name"
+                          :value="item.id">
+                          <div class="z-code">{{ item.id }}</div>
+                          <div class="z-name">{{ item.name }}</div>
+                        </el-option>
+                      </el-select>
                       <div class="z-med-name" v-else>
-                        <span>{{ $index === 0 ? row.mode : '-' }}</span>
+                        <span>{{ $index === 0 ? row.modeName : '-' }}</span>
                       </div>
                     </div>
                   </el-form-item>
@@ -327,8 +446,8 @@
                     :prop="`groupList.${groupIndex}.${$index}.remark`"
                     :rules="{}">
                     <div class="med-validate-item">
-                      <el-select v-model="row.remark" clearable placeholder="请选择" size="small" v-if="rowColName === `groupList.${groupIndex}.${$index}.remark`" :ref="`groupList.${groupIndex}.${$index}.remark`">
-                        <el-option v-for="item in remarkList" :key="item.code" :label="item.name" :value="item.name"></el-option>
+                      <el-select class="z-w100" v-model="row.remark" clearable placeholder="请选择" size="small" v-if="rowColName === `groupList.${groupIndex}.${$index}.remark`" :ref="`groupList.${groupIndex}.${$index}.remark`">
+                        <el-option v-for="item in remarkList" :key="item.id" :label="item.name" :value="item.name"></el-option>
                       </el-select>
                       <div class="z-med-name" v-else>{{ row.remark }}</div>
                     </div>

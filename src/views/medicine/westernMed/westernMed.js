@@ -1,4 +1,4 @@
-import { drugList } from "@/views/medicine/westernMed/data";
+import { drugList as drugListCopy } from "@/views/medicine/westernMed/data";
 import CatTableSelect from "@/components/TableSelect/CatTableSelect";
 import {cloneObj, isArray} from "@/utils/typePub";
 
@@ -23,7 +23,8 @@ export default {
       presIndex: 0,
       activeNames: [0],
       itemActive: cloneObj(itemActiveCopy),
-      drugList,
+      drugList: drugListCopy,
+      drugListCopy,
       medColumns: [
         {
           key: 'medName',
@@ -68,46 +69,47 @@ export default {
         label: 'medName'
       },
       rowColName: '',
-      keyArr: ['medName', 'formName', 'spec', 'factoryName', 'useUnit', 'doseUnit', 'doseRatio', 'useRatio', 'presRatio', 'presUnit'],
       usageList: [
-        { code: 'qd', name: '一日一次', day: 1, num: 1 },
-        { code: 'bid', name: '一日二次', day: 1, num: 2 },
-        { code: 'tid', name: '一日三次', day: 1, num: 3 },
-        { code: 'qid', name: '一日四次', day: 1, num: 4 },
-        { code: 'qm', name: '早上一次', day: 1, num: 1 }
+        { id: 'qd', name: '一日一次', day: 1, num: 1 },
+        { id: 'bid', name: '一日二次', day: 1, num: 2 },
+        { id: 'tid', name: '一日三次', day: 1, num: 3 },
+        { id: 'qid', name: '一日四次', day: 1, num: 4 },
+        { id: 'qm', name: '早上一次', day: 1, num: 1 }
       ],
-      usageColumns: [
-        {
-          key: 'code',
-          label: '代码',
-          width: 70
-        },
-        {
-          key: 'name',
-          label: '名字',
-          width: 100
-        }
+      usageListCopy: [
+        { id: 'qd', name: '一日一次', day: 1, num: 1 },
+        { id: 'bid', name: '一日二次', day: 1, num: 2 },
+        { id: 'tid', name: '一日三次', day: 1, num: 3 },
+        { id: 'qid', name: '一日四次', day: 1, num: 4 },
+        { id: 'qm', name: '早上一次', day: 1, num: 1 }
       ],
-      usageProps: {
-        key: 'code',
-        label: 'name'
-      },
-      modeProps: {
-        key: 'name',
-        label: 'name'
-      },
+      modeListCopy: [
+        { id: 'im', name: '肌注' },
+        { id: 'iv', name: '静推' },
+        { id: 'ivgtt', name: '静滴' },
+        { id: 'db', name: '滴鼻' },
+        { id: 'de', name: '滴耳' },
+        { id: 'dy', name: '滴眼' },
+        { id: 'kh', name: '口含' },
+        { id: 'wy', name: '外用' },
+        { id: 'qt', name: '其他' }
+      ],
       modeList: [
-        { code: 'po', name: '口服' },
-        { code: 'im', name: '肌注' },
-        { code: 'iv', name: '静推' },
-        { code: 'ivgtt', name: '静滴' },
-        { code: 'db', name: '地鼻' }
+        { id: 'im', name: '肌注' },
+        { id: 'iv', name: '静推' },
+        { id: 'ivgtt', name: '静滴' },
+        { id: 'db', name: '滴鼻' },
+        { id: 'de', name: '滴耳' },
+        { id: 'dy', name: '滴眼' },
+        { id: 'kh', name: '口含' },
+        { id: 'wy', name: '外用' },
+        { id: 'qt', name: '其他' }
       ],
       remarkList: [
-        { code: 1, name: '餐前' },
-        { code: 2, name: '餐时' },
-        { code: 3, name: '餐后' },
-        { code: 4, name: '睡前' }
+        { id: 1, name: '餐前' },
+        { id: 2, name: '餐时' },
+        { id: 3, name: '餐后' },
+        { id: 4, name: '睡前' }
       ]
     }
   },
@@ -115,62 +117,141 @@ export default {
 
   },
   methods: {
-    // 药名切换
-    tableRowChange(e, groupIndex, index) {
-      if(e) {
-        if(e.stockNum === 0) {
+    // 下拉框改变值
+    selectChange(e, groupIndex, index, type) {
+      let list = [];
+      let rowItem = {};
+      if(type === 'usage') {
+        // 用法
+        list = this.usageList;
+      }else if(type === 'mode') {
+        // 给药方式
+        list = this.modeList;
+      }else if(type === 'medId') {
+        // 药名
+        list = this.drugList;
+      }
+      list.forEach(ev => {
+        if(ev.id === e || ev.medId === e) {
+          rowItem = ev;
+        }
+      })
+      const { presIndex, form } = this;
+      const presList = form.presList;
+      const medItem = presList[presIndex]['groupList'][groupIndex][index];
+      // 赋值
+      if(type === 'usage') {
+        // 用法
+        this.$set(medItem, 'usageName', rowItem['name'])
+        this.$set(medItem, 'day', rowItem['day'])
+        this.$set(medItem, 'rate', rowItem['num'])
+      }else if(type === 'mode') {
+        // 给药方式
+        this.$set(medItem, 'modeName', rowItem['name'])
+      }else if(type === 'medId') {
+        // 药名
+        if(rowItem.stockNum === 0) {
           this.$message.error('当前药品库存为0');
+          this.$set(medItem, 'medId', '');
           this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+          return
         }else {
-          const { presIndex, form } = this;
-          const presList = form.presList;
-          const groupItem = presList[presIndex].groupList[groupIndex];
-          for(let i=0; i< groupItem.length; i++) {
-            if(groupItem[i].medName === e.medName) {
-              this.$message.error('该药品已经存在');
-              this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
-              return;
-            }
-          }
-          this.keyArr.forEach(ev => {
-            this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
-          })
-          const formDom = this.$refs['my-form']
-          formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
-          formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
-          formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`);
-          formDom.validateField(`groupList.${groupIndex}.${index}.medId`);
-          const activeKey = `groupList.${groupIndex}.${index}.useRatio`;
-          this.rowColName = activeKey;
-          this.$nextTick(() => {
-            this.$refs[activeKey][0].focus();
-          })
+          const keyArr = ['medName', 'formName', 'spec', 'factoryName', 'useUnit', 'doseUnit', 'doseRatio', 'useRatio', 'presRatio', 'presUnit'];
+          keyArr.forEach(ev => {
+            this.$set(medItem, ev, rowItem[ev])
+          });
         }
       }
-    },
-    // 用法改变
-    usageChange(e, groupIndex, index) {
-      if(e) {
-        const { presIndex, form } = this;
-        const presList = form.presList;
-        const medItem = presList[presIndex]['groupList'][groupIndex][index];
-        if(medItem.usageName === e.name) {
-          return
-        }
-        this.$set(medItem, 'usageName', e['name'])
-        this.$set(medItem, 'day', e['day'])
-        this.$set(medItem, 'rate', e['num'])
-        const formDom = this.$refs['my-form'];
+      const formDom = this.$refs['my-form'];
+      let activeKey;
+      // 验证变化
+      if(type === 'usage') {
+        // 用法
         formDom.validateField(`groupList.${groupIndex}.${index}.usage`);
         formDom.validateField(`groupList.${groupIndex}.${index}.day`);
         formDom.validateField(`groupList.${groupIndex}.${index}.rate`);
-        const activeKey = `groupList.${groupIndex}.${index}.mode`;
-        this.rowColName = activeKey;
-        this.$nextTick(() => {
-          this.$refs[activeKey][0].visible = true;
-        })
+        activeKey = `groupList.${groupIndex}.${index}.mode`;
+      }else if(type === 'mode') {
+        formDom.validateField(`groupList.${groupIndex}.${index}.mode`);
+        activeKey = `groupList.${groupIndex}.${index}.day`;
+      }else if(type === 'medId') {
+        formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
+        formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
+        formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`);
+        formDom.validateField(`groupList.${groupIndex}.${index}.medId`);
+        activeKey = `groupList.${groupIndex}.${index}.useRatio`;
+      }
+      this.rowColName = activeKey;
+      this.$nextTick(() => {
+        this.$refs[activeKey][0].focus();
+      })
+    },
+    // 下拉框隐藏显示
+    selectVisible(val, type) {
+      if(val) {
+        if(type === 'mode') {
+          this.modeList = this.modeListCopy;
+        }else if(type === 'usage') {
+          this.usageList = this.usageListCopy;
+        }else if(type === 'medId') {
+          this.drugList = this.drugListCopy;
+        }
       }
     },
+    // 搜索过滤方法
+    filterMethod(val, searchArr=[], list, listCopy) {
+      if(val) {
+        if(val.charCodeAt(0) <= 255) {
+          val = val.toUpperCase();
+        }
+        this[list] = this[listCopy].filter((item) => {
+          for(let i=0; i <= searchArr.length-1; i++) {
+            let searchName = item[searchArr[i]] + '';
+            if(searchName.charCodeAt(0) <= 255) {
+              searchName = searchName.toUpperCase();
+            }
+            if(searchName.indexOf(val) > -1) {
+              return true
+            }
+          }
+        })
+      }else {
+        this[list] = this[listCopy]
+      }
+    },
+    // 药名切换
+    // tableRowChange(e, groupIndex, index) {
+    //   if(e) {
+    //     if(e.stockNum === 0) {
+    //       this.$message.error('当前药品库存为0');
+    //       this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+    //     }else {
+    //       const { presIndex, form } = this;
+    //       const presList = form.presList;
+    //       const groupItem = presList[presIndex].groupList[groupIndex];
+    //       for(let i=0; i< groupItem.length; i++) {
+    //         if(groupItem[i].medName === e.medName) {
+    //           this.$message.error('该药品已经存在');
+    //           this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+    //           return;
+    //         }
+    //       }
+    //       this.keyArr.forEach(ev => {
+    //         this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
+    //       })
+    //       const formDom = this.$refs['my-form']
+    //       formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
+    //       formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
+    //       formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`);
+    //       formDom.validateField(`groupList.${groupIndex}.${index}.medId`);
+    //       const activeKey = `groupList.${groupIndex}.${index}.useRatio`;
+    //       this.rowColName = activeKey;
+    //       this.$nextTick(() => {
+    //         this.$refs[activeKey][0].focus();
+    //       })
+    //     }
+    //   }
+    // },
     // 大于0的正整数
     validateDigits(rule, value, callback) {
       if (!value) {
@@ -226,8 +307,21 @@ export default {
     cellClick(row, column, cell, event) {
       this.itemActive = { groupIndex: row.groupIndex, itemIndex: row.index };
       // this.rowColName = `${column.property}${row.groupIndex}${row.index}`;
-      this.rowColName = `groupList.${row.groupIndex}.${row.index}.${column.property}`;
+      const activeKey = `groupList.${row.groupIndex}.${row.index}.${column.property}`
+      this.rowColName = activeKey;
       event.stopPropagation();
+      this.$nextTick(() => {
+        if(this.$refs[activeKey]) {
+          const name = activeKey.split('.')[3];
+          const selectArr = ['medId', 'usage', 'mode', 'remark'];
+          const activeDom =  this.$refs[activeKey];
+          if(selectArr.includes(name)) {
+            activeDom[0].visible = true;
+          }else {
+            activeDom[0].focus();
+          }
+        }
+      })
     },
     // 点击保存
     saveClick(event) {
@@ -359,7 +453,7 @@ export default {
           }
           // // 如果行删除完
           if(groupList[itemActive.groupIndex].length === 0) {
-            this.groupDelClick();
+            this.groupDelContent(event);
             return
           }else {
             if(!groupList[itemActive.groupIndex][itemActive.itemIndex]) {
@@ -418,22 +512,26 @@ export default {
       })
     },
     // 删除组
-    groupDelClick(event) {
+    groupDelClick(event, showToast=false) {
       this.$confirm('您是否确认删除该分组？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(() => {
-        const { itemActive, presIndex, form } = this;
-        const presList = form.presList;
-        const groupList = presList[presIndex].groupList;
-        groupList.splice(itemActive.groupIndex, 1);
-        this.delAllJudge(event);
+        this.groupDelContent(event);
       }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消删除操作'
         })
       })
+    },
+    // 删除逻辑
+    groupDelContent(event) {
+      const { itemActive, presIndex, form } = this;
+      const presList = form.presList;
+      const groupList = presList[presIndex].groupList;
+      groupList.splice(itemActive.groupIndex, 1);
+      this.delAllJudge(event);
     }
   }
 }
