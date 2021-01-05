@@ -34,7 +34,14 @@ Vue.use(ElementUI, { locale })
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
+// 屏蔽浏览器快捷键
+document.addEventListener('keydown', function(e){
+  if(e.key === 'F3') {
+    e.preventDefault();
+    return false;
+  }
+}, false);
 
 new Vue({
   el: '#app',

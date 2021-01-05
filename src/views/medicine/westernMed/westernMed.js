@@ -68,7 +68,7 @@ export default {
         key: 'medId',
         label: 'medName'
       },
-      rowColName: '',
+      rowColName: '',   // 输入框激活的状态
       usageList: [
         { id: 'qd', name: '一日一次', day: 1, num: 1 },
         { id: 'bid', name: '一日二次', day: 1, num: 2 },
@@ -113,14 +113,43 @@ export default {
       ],
       firstLineField: ['medId', 'useRatio', 'doseRatio', 'usage', 'mode', 'day', 'rate', 'presRatio', 'remark'],   // 第一行需要填的字段
       secondLineField: ['medId', 'useRatio', 'doseRatio', 'presRatio', 'remark'],  // 不同行不同的字段
-      inputSelectList: ['medId', 'usage', 'mode', 'remark']
+      inputSelectList: ['medId', 'usage', 'mode', 'remark'],  // 需要全选的字段
+      keyRowColItem: '',  // 键盘聚焦的字段
+      notUseEnterUp: false  // 不使用键盘回车
     }
   },
   created() {
   },
+  mounted() {
+    document.addEventListener('keyup', this.handleKeyup, false)
+  },
+  destroyed() {
+    document.removeEventListener('keyup', this.handleKeyup)
+  },
   methods: {
+    // 全局的键盘监听
+    handleKeyup(e) {
+      if(e.key === 's' && e.altKey) {
+        this.savePost(e)
+      }else if(e.key === 'F2') {
+        this.lineAddClick(e)
+      }else if(e.key === 'F3') {
+        this.lineDelClick(e)
+      } else if(e.key === 'F4') {
+        this.groupAddClick(e)
+      } else if(e.key === 'F5') {
+        this.groupDelClick(e)
+      }
+    },
+    handleEnter($event) {
+      this.groupAddClick($event)
+    },
     // 按下回车键
     keyupSubmit(e, groupIndex, index, type) {
+      if(this.notUseEnterUp) {
+        this.notUseEnterUp = false;
+        return
+      }
       let lineField, fieldIndex;
       // 单独字段验证
       const formDom = this.$refs['my-form'];
@@ -148,9 +177,9 @@ export default {
             const activeKey = `groupList.${groupIndex}.${index}.${lineField[nextFieldIndex]}`;
             this.rowColName = activeKey;
             this.$nextTick(() => {
-              const name = activeKey.split('.')[3];
               const activeDom =  this.$refs[activeKey];
               activeDom[0].focus();
+              const name = activeKey.split('.')[3];
               if(!this.inputSelectList.includes(name)) {
                 activeDom[0].select();
               }
@@ -230,6 +259,7 @@ export default {
         }else if(type === 'mode') {
           formDom.validateField(`groupList.${groupIndex}.${index}.mode`);
           activeKey = `groupList.${groupIndex}.${index}.day`;
+          this.notUseEnterUp = true;
         }else if(type === 'medId') {
           formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
           formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
@@ -239,7 +269,12 @@ export default {
         }
         this.rowColName = activeKey;
         this.$nextTick(() => {
-          this.$refs[activeKey][0].focus();
+          const activeDom = this.$refs[activeKey];
+          activeDom[0].focus();
+          const name = activeKey.split('.')[3];
+          if(!this.inputSelectList.includes(name)) {
+            activeDom[0].select();
+          }
         })
       })
     },
@@ -346,6 +381,11 @@ export default {
         }
       })
     },
+    // 保存提交
+    async savePost(event) {
+      await this.saveClick(event);
+      this.$message.success('保存成功')
+    },
     // 点击保存
     saveClick(event) {
       return new Promise((resolve, reject) => {
@@ -369,15 +409,10 @@ export default {
             this.rowColName = activeKey;
             this.$nextTick(() => {
               event.stopPropagation();
-              const name = activeKey.split('.')[3];
-              const selectArr = ['medId', 'usage', 'mode'];
+              // const name = activeKey.split('.')[3];
+              // const selectArr = ['medId', 'usage', 'mode'];
               const activeDom =  this.$refs[activeKey];
-              console.log('activeDom', activeDom)
-              if(selectArr.includes(name)) {
-                activeDom[0].visible = true;
-              }else {
-                activeDom[0].focus();
-              }
+              activeDom[0].focus();
               this.$message.error(object[activeKey][0].message)
             })
           }
@@ -513,6 +548,10 @@ export default {
       const { activeNames, presIndex, form } = this;
       const presList = form.presList;
       const groupList = presList[presIndex].groupList;
+      if(groupList.length >= 5) {
+        this.$message.warning('最多5组');
+        return
+      }
       const groupIndex = groupList.length;
       groupList.push([{ groupIndex }]);
       // 添加折叠面板
@@ -531,7 +570,7 @@ export default {
       // 拉开选择药品下拉框
       this.$nextTick(() => {
         event.stopPropagation();
-        this.$refs[activeKey][0].visible = true;
+        this.$refs[activeKey][0].focus();
       })
     },
     // 删除组

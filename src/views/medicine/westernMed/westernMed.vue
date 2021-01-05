@@ -2,16 +2,16 @@
   <div class="z-card-style med-page" @click="boxClick">
     <div class="tool">
       <div class="tool-left">
-        <el-button size="small" type="primary" plain @click="saveClick">
-          保存</el-button>
+        <el-button size="small" type="primary" plain @click="savePost">
+          保存(ALT+S)</el-button>
         <el-button size="small" type="primary" plain @click="lineAddClick">
-          新增行</el-button>
+          新增行(F2)</el-button>
         <el-button size="small" type="primary" plain @click="lineDelClick">
-          删除行</el-button>
+          删除行(F3)</el-button>
         <el-button size="small" type="primary" plain @click="groupAddClick">
-          新增组</el-button>
+          新增组(F4)</el-button>
         <el-button size="small" type="primary" plain @click="groupDelClick">
-          删除组</el-button>
+          删除组(F5)</el-button>
         <el-button size="small" type="primary" plain>
           刷新</el-button>
         <el-button size="small" type="primary" plain>
@@ -470,7 +470,16 @@
                     :prop="`groupList.${groupIndex}.${$index}.remark`"
                     :rules="{}">
                     <div class="med-validate-item">
-                      <el-select class="z-w100" v-model="row.remark" clearable placeholder="请选择" size="small" v-if="rowColName === `groupList.${groupIndex}.${$index}.remark`" :ref="`groupList.${groupIndex}.${$index}.remark`">
+                      <el-select
+                        class="z-w100"
+                        v-model="row.remark"
+                        clearable
+                        placeholder="请选择"
+                        size="small"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.remark`"
+                        :ref="`groupList.${groupIndex}.${$index}.remark`"
+                        filterable
+                        @keydown.enter.native="handleEnter">
                         <el-option v-for="item in remarkList" :key="item.id" :label="item.name" :value="item.name"></el-option>
                       </el-select>
                       <div class="z-med-name" v-else>{{ row.remark }}</div>
