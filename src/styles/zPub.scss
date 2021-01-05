@@ -570,7 +570,7 @@ th.star{
 }
 .z-select-table-option{
   .el-scrollbar{
-    padding-top: 41px;
+    //padding-top: 41px;
   }
   .el-select-dropdown__list{
     padding: 0;
@@ -580,9 +580,9 @@ th.star{
   }
   .z-select-header{
     display: flex;
-    position: absolute;
-    top: 0;
-    left: 0;
+    //position: absolute;
+    //top: 0;
+    //left: 0;
     background: #F5F7FA;
     z-index: 10;
     div{

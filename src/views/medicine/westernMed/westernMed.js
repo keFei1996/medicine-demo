@@ -110,13 +110,55 @@ export default {
         { id: 2, name: '餐时' },
         { id: 3, name: '餐后' },
         { id: 4, name: '睡前' }
-      ]
+      ],
+      firstLineField: ['medId', 'useRatio', 'doseRatio', 'usage', 'mode', 'day', 'rate', 'presRatio', 'remark'],   // 第一行需要填的字段
+      secondLineField: ['medId', 'useRatio', 'doseRatio', 'presRatio', 'remark'],  // 不同行不同的字段
+      inputSelectList: ['medId', 'usage', 'mode', 'remark']
     }
   },
   created() {
-
   },
   methods: {
+    // 按下回车键
+    keyupSubmit(e, groupIndex, index, type) {
+      let lineField, fieldIndex;
+      // 单独字段验证
+      const formDom = this.$refs['my-form'];
+      const validateKey = `groupList.${groupIndex}.${index}.${type}`;
+      formDom.validateField(validateKey, (errorMessage) => {
+        if(errorMessage !== '') {
+          this.$message.error(errorMessage);
+        }else {
+          if(index === 0) {
+            lineField = this.firstLineField;
+          }else {
+            lineField = this.secondLineField;
+          }
+          lineField.forEach((ev, i) => {
+            if(ev === type) {
+              fieldIndex = i;
+            }
+          });
+          if(fieldIndex === lineField.length - 1) {
+            // 最后一个字段，新增数组
+            this.groupAddClick(e)
+          }else {
+            // 下一个字段下标
+            const nextFieldIndex = fieldIndex + 1;
+            const activeKey = `groupList.${groupIndex}.${index}.${lineField[nextFieldIndex]}`;
+            this.rowColName = activeKey;
+            this.$nextTick(() => {
+              const name = activeKey.split('.')[3];
+              const activeDom =  this.$refs[activeKey];
+              activeDom[0].focus();
+              if(!this.inputSelectList.includes(name)) {
+                activeDom[0].select();
+              }
+            })
+          }
+        }
+      })
+    },
     // 下拉框改变值
     selectChange(e, groupIndex, index, type) {
       let list = [];
@@ -138,6 +180,7 @@ export default {
       })
       const { presIndex, form } = this;
       const presList = form.presList;
+      const groupItem = presList[presIndex].groupList[groupIndex];
       const medItem = presList[presIndex]['groupList'][groupIndex][index];
       // 赋值
       if(type === 'usage') {
@@ -153,9 +196,21 @@ export default {
         if(rowItem.stockNum === 0) {
           this.$message.error('当前药品库存为0');
           this.$set(medItem, 'medId', '');
-          this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
+          this.$nextTick(() => {
+            this.$refs[`groupList.${groupIndex}.${index}.medId`][0].focus();
+          })
           return
         }else {
+          for(let i=0; i< groupItem.length; i++) {
+            if(groupItem[i].medName === rowItem.medName) {
+              this.$message.error('该药品已经存在');
+              this.$set(medItem, 'medId', '');
+              this.$nextTick(() => {
+                this.$refs[`groupList.${groupIndex}.${index}.medId`][0].focus();
+              })
+              return;
+            }
+          }
           const keyArr = ['medName', 'formName', 'spec', 'factoryName', 'useUnit', 'doseUnit', 'doseRatio', 'useRatio', 'presRatio', 'presUnit'];
           keyArr.forEach(ev => {
             this.$set(medItem, ev, rowItem[ev])
@@ -164,26 +219,28 @@ export default {
       }
       const formDom = this.$refs['my-form'];
       let activeKey;
-      // 验证变化
-      if(type === 'usage') {
-        // 用法
-        formDom.validateField(`groupList.${groupIndex}.${index}.usage`);
-        formDom.validateField(`groupList.${groupIndex}.${index}.day`);
-        formDom.validateField(`groupList.${groupIndex}.${index}.rate`);
-        activeKey = `groupList.${groupIndex}.${index}.mode`;
-      }else if(type === 'mode') {
-        formDom.validateField(`groupList.${groupIndex}.${index}.mode`);
-        activeKey = `groupList.${groupIndex}.${index}.day`;
-      }else if(type === 'medId') {
-        formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
-        formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
-        formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`);
-        formDom.validateField(`groupList.${groupIndex}.${index}.medId`);
-        activeKey = `groupList.${groupIndex}.${index}.useRatio`;
-      }
-      this.rowColName = activeKey;
       this.$nextTick(() => {
-        this.$refs[activeKey][0].focus();
+        // 验证变化
+        if(type === 'usage') {
+          // 用法
+          formDom.validateField(`groupList.${groupIndex}.${index}.usage`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.day`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.rate`);
+          activeKey = `groupList.${groupIndex}.${index}.mode`;
+        }else if(type === 'mode') {
+          formDom.validateField(`groupList.${groupIndex}.${index}.mode`);
+          activeKey = `groupList.${groupIndex}.${index}.day`;
+        }else if(type === 'medId') {
+          formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`);
+          formDom.validateField(`groupList.${groupIndex}.${index}.medId`);
+          activeKey = `groupList.${groupIndex}.${index}.useRatio`;
+        }
+        this.rowColName = activeKey;
+        this.$nextTick(() => {
+          this.$refs[activeKey][0].focus();
+        })
       })
     },
     // 下拉框隐藏显示
@@ -219,39 +276,6 @@ export default {
         this[list] = this[listCopy]
       }
     },
-    // 药名切换
-    // tableRowChange(e, groupIndex, index) {
-    //   if(e) {
-    //     if(e.stockNum === 0) {
-    //       this.$message.error('当前药品库存为0');
-    //       this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
-    //     }else {
-    //       const { presIndex, form } = this;
-    //       const presList = form.presList;
-    //       const groupItem = presList[presIndex].groupList[groupIndex];
-    //       for(let i=0; i< groupItem.length; i++) {
-    //         if(groupItem[i].medName === e.medName) {
-    //           this.$message.error('该药品已经存在');
-    //           this.$refs[`groupList.${groupIndex}.${index}.medId`][0].visible = true;
-    //           return;
-    //         }
-    //       }
-    //       this.keyArr.forEach(ev => {
-    //         this.$set(presList[presIndex]['groupList'][groupIndex][index], ev, e[ev])
-    //       })
-    //       const formDom = this.$refs['my-form']
-    //       formDom.validateField(`groupList.${groupIndex}.${index}.useRatio`);
-    //       formDom.validateField(`groupList.${groupIndex}.${index}.doseRatio`);
-    //       formDom.validateField(`groupList.${groupIndex}.${index}.presRatio`);
-    //       formDom.validateField(`groupList.${groupIndex}.${index}.medId`);
-    //       const activeKey = `groupList.${groupIndex}.${index}.useRatio`;
-    //       this.rowColName = activeKey;
-    //       this.$nextTick(() => {
-    //         this.$refs[activeKey][0].focus();
-    //       })
-    //     }
-    //   }
-    // },
     // 大于0的正整数
     validateDigits(rule, value, callback) {
       if (!value) {
@@ -315,10 +339,9 @@ export default {
           const name = activeKey.split('.')[3];
           const selectArr = ['medId', 'usage', 'mode', 'remark'];
           const activeDom =  this.$refs[activeKey];
-          if(selectArr.includes(name)) {
-            activeDom[0].visible = true;
-          }else {
-            activeDom[0].focus();
+          activeDom[0].focus();
+          if(!selectArr.includes(name)) {
+            activeDom[0].select();
           }
         }
       })

@@ -146,7 +146,7 @@
                         v-model="row.medId"
                         placeholder="请选择"
                         filterable
-                        :filter-method="(val) => filterMethod(val, ['medId', 'inputcode1', 'inputcode2'], 'drugList','drugListCopy')"
+                        :filter-method="(val) => filterMethod(val, ['medName', 'inputcode1', 'inputcode2'], 'drugList','drugListCopy')"
                         @visible-change="selectVisible($event, 'medId')"
                         v-if="rowColName === `groupList.${groupIndex}.${$index}.medId`"
                         :ref="`groupList.${groupIndex}.${$index}.medId`"
@@ -219,15 +219,6 @@
                       <div class="z-med-name" v-else>
                         <span>{{ row.medName }}</span>
                       </div>
-<!--                      <cat-table-select-->
-<!--                        v-model="row.medId"-->
-<!--                        :data="drugList"-->
-<!--                        :columns="medColumns"-->
-<!--                        :props="medProps"-->
-<!--                        @rowChange="tableRowChange($event, groupIndex, $index)"-->
-<!--                        :ref="`groupList.${groupIndex}.${$index}.medId`"-->
-<!--                        v-if="rowColName === `groupList.${groupIndex}.${$index}.medId`"></cat-table-select>-->
-<!--                      <span class="z-med-name" v-else>{{ row.medName }}</span>-->
                     </div>
                   </el-form-item>
                 </template>
@@ -273,7 +264,14 @@
                     :prop="`groupList.${groupIndex}.${$index}.useRatio`"
                     :rules="{ required: true, message: '用量必填且大于0', validator: validateDigits, trigger: 'change' }">
                     <div class="med-validate-item">
-                      <el-input type="number" class="z-input-small" size="small" v-model="row.useRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.useRatio`" :ref="`groupList.${groupIndex}.${$index}.useRatio`"/>
+                      <el-input
+                        type="number"
+                        class="z-input-small"
+                        size="small"
+                        v-model="row.useRatio"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.useRatio`"
+                        :ref="`groupList.${groupIndex}.${$index}.useRatio`"
+                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'useRatio')"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ row.useRatio }}</span>
                         <span v-if="row.useRatio">{{ row.useUnit }}</span>
@@ -292,7 +290,14 @@
                     :prop="`groupList.${groupIndex}.${$index}.doseRatio`"
                     :rules="{ required: true, message: '剂量必填且大于0', validator: validateDigits, trigger: 'change' }">
                     <div class="med-validate-item">
-                      <el-input type="number" class="z-input-small" size="small" v-model="row.doseRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.doseRatio`" :ref="`groupList.${groupIndex}.${$index}.doseRatio`"/>
+                      <el-input
+                        type="number"
+                        class="z-input-small"
+                        size="small"
+                        v-model="row.doseRatio"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.doseRatio`"
+                        :ref="`groupList.${groupIndex}.${$index}.doseRatio`"
+                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'doseRatio')"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ row.doseRatio }}</span>
                         <span v-if="row.doseRatio">{{ row.doseUnit }}</span>
@@ -397,7 +402,13 @@
                     :prop="`groupList.${groupIndex}.${$index}.day`"
                     :rules=" $index === 0 ? { required: true, message: '用药天数必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
                     <div class="med-validate-item">
-                      <el-input type="number" size="small" v-model="row.day" v-if="rowColName === `groupList.${groupIndex}.${$index}.day` && $index === 0" :ref="`groupList.${groupIndex}.${$index}.day`"/>
+                      <el-input
+                        type="number"
+                        size="small"
+                        v-model="row.day"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.day` && $index === 0"
+                        :ref="`groupList.${groupIndex}.${$index}.day`"
+                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'day')"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ $index === 0 ? row.day : '-' }}</span>
                       </div>
@@ -415,7 +426,13 @@
                     :prop="`groupList.${groupIndex}.${$index}.rate`"
                     :rules=" $index === 0 ? { required: true, message: '用药次数必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
                     <div class="med-validate-item">
-                      <el-input type="number" size="small" v-model="row.rate" v-if="rowColName === `groupList.${groupIndex}.${$index}.rate`  && $index === 0" :ref="`groupList.${groupIndex}.${$index}.rate`"/>
+                      <el-input
+                        type="number"
+                        size="small"
+                        v-model="row.rate"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.rate`  && $index === 0"
+                        :ref="`groupList.${groupIndex}.${$index}.rate`"
+                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'rate')"/>
                       <div class="z-med-name text-right" v-else><span>{{ $index === 0 ? row.rate : '-' }}</span></div>
                     </div>
                   </el-form-item>
@@ -431,7 +448,14 @@
                     :prop="`groupList.${groupIndex}.${$index}.presRatio`"
                     :rules="{ required: true, message: '配药数量必填且大于0', validator: validateDigits, trigger: 'change' }">
                     <div class="med-validate-item">
-                      <el-input class="z-input-small" type="number" size="small" v-model="row.presRatio" v-if="rowColName === `groupList.${groupIndex}.${$index}.presRatio`" :ref="`groupList.${groupIndex}.${$index}.presRatio`"/>
+                      <el-input
+                        class="z-input-small"
+                        type="number"
+                        size="small"
+                        v-model="row.presRatio"
+                        v-if="rowColName === `groupList.${groupIndex}.${$index}.presRatio`"
+                        :ref="`groupList.${groupIndex}.${$index}.presRatio`"
+                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'presRatio')"/>
                       <div class="z-med-name text-right" v-else><span>{{ row.presRatio }}</span><span v-if="row.presRatio">{{ row.presUnit }}</span></div>
                     </div>
                   </el-form-item>
@@ -466,6 +490,5 @@
 </script>
 
 <style scoped lang="scss">
-  @import "../../../styles/zPub";
   @import "./westernMed";
 </style>
