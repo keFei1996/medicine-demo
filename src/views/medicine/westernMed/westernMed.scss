@@ -131,8 +131,13 @@
   min-width: 1140px;
   height: 100vh;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
   ::v-deep .el-form-item__content{
     line-height: unset;
+  }
+  .my-form{
+    flex: 1;
   }
   .el-form-item.is-success{
     color: #c00000;

@@ -114,8 +114,10 @@ export default {
       firstLineField: ['medId', 'useRatio', 'doseRatio', 'usage', 'mode', 'day', 'rate', 'presRatio', 'remark'],   // 第一行需要填的字段
       secondLineField: ['medId', 'useRatio', 'doseRatio', 'presRatio', 'remark'],  // 不同行不同的字段
       inputSelectList: ['medId', 'usage', 'mode', 'remark'],  // 需要全选的字段
-      keyRowColItem: '',  // 键盘聚焦的字段
-      notUseEnterUp: false  // 不使用键盘回车
+      focusRowItem: '',  // 键盘聚焦的字段
+      notUseEnterUp: false,  // 不使用键盘回车
+      keyupField: ['useUnit', 'medId', 'formName', 'spec', 'factoryName', 'useRatio', 'doseRatio', 'usage', 'mode', 'day', 'rate', 'presRatio', 'remark'],  // 表格的所有字段
+      listenFormFlag: false
     }
   },
   created() {
@@ -125,8 +127,126 @@ export default {
   },
   destroyed() {
     document.removeEventListener('keyup', this.handleKeyup)
+    document.removeEventListener('keyup', this.handleFormKeyup)
   },
   methods: {
+    // 单元格点击
+    cellClick(row, column, cell) {
+      this.itemActive = { groupIndex: row.groupIndex, itemIndex: row.index };
+      const activeKey = `groupList.${row.groupIndex}.${row.index}.${column.property}`
+      this.rowColName = activeKey;
+      if(this.firstLineField.includes(column.property)) {
+        this.focusRowItem = activeKey;
+      }else {
+        this.focusRowItem = '';
+        return
+      }
+      this.$nextTick(() => {
+        if(this.$refs[activeKey]) {
+          const activeDom =  this.$refs[activeKey];
+          activeDom[0].focus();
+          activeDom[0].select && activeDom[0].select()
+        }
+      })
+    },
+    // 按下回车键
+    // 处理表单键盘操作
+    handleFormKeyup(e) {
+      console.log(e)
+      const { rowColName, keyupField } = this;
+      if(rowColName) {
+        const formDom = this.$refs['my-form'];
+        const nameArr = rowColName.split('.');
+        const groupIndex = nameArr[1];
+        const index = nameArr[2];
+        const name = nameArr[3];
+        let nameIndex = 0;
+        keyupField.forEach((ev, i) => {
+          if(ev === name) {
+            nameIndex = i;
+          }
+        })
+        if(e.key === 'ArrowUp') {
+
+        }else if(e.key === 'ArrowDown') {
+
+        }else if(e.key === 'ArrowLeft') {
+          if(nameIndex > 0) {
+            nameArr[3] = keyupField[--nameIndex];
+            this.rowColName = nameArr.join('.')
+          }
+        }else if(e.key === 'ArrowRight') {
+          if(nameIndex < keyupField.length - 1) {
+            nameArr[3] = keyupField[++nameIndex];
+            this.rowColName = nameArr.join('.')
+          }
+        }else if(e.key === 'Enter') {
+          if(this.focusRowItem === '') {
+            // 没有输入框聚焦时
+            this.focusRowItem = rowColName;
+            this.inputFocusPub(rowColName)
+          }else {
+            if(this.notUseEnterUp) {
+              this.notUseEnterUp = false;
+              return
+            }
+            const { focusRowItem } = this;
+            formDom.validateField(focusRowItem, (errorMessage) => {
+              if(errorMessage !== '') {
+                this.$message.error(errorMessage);
+              }else {
+                let lineField, fieldIndex;  // 需要输入的input列表
+                if(+index === 0) {
+                  lineField = this.firstLineField;
+                }else {
+                  lineField = this.secondLineField;
+                }
+                lineField.forEach((ev, i) => {
+                  if(ev === name) {
+                    fieldIndex = i;
+                  }
+                });
+                if(fieldIndex === lineField.length - 1) {
+                  // 最后一个字段，新增数组
+                  this.groupAddClick(e)
+                }else {
+                  // 下一个字段下标
+                  const nextFieldIndex = fieldIndex + 1;
+                  const activeKey = `groupList.${groupIndex}.${index}.${lineField[nextFieldIndex]}`;
+                  this.rowColName = activeKey;
+                  this.focusRowItem = activeKey;
+                  this.$nextTick(() => {
+                    const activeDom =  this.$refs[activeKey];
+                    activeDom[0].focus();
+                    activeDom[0].select && activeDom[0].select()
+                  })
+                }
+              }
+            })
+          }
+        }else if(e.key === 'Escape') {
+          this.focusRowItem = '';
+        }
+      }
+    },
+    // 公共输入框激活方法
+    inputFocusPub(activeKey) {
+      this.$nextTick(() => {
+        if(this.$refs[activeKey]) {
+          const activeDom = this.$refs[activeKey];
+          activeDom[0].focus();
+          activeDom[0].select && activeDom[0].select();
+        }
+      })
+    },
+    // 表单点击
+    formClick(event) {
+      if(!this.listenFormFlag) {
+        this.listenFormFlag = true;
+        document.addEventListener('keyup', this.handleFormKeyup, false);
+      }
+      event.stopPropagation();
+    },
     // 全局的键盘监听
     handleKeyup(e) {
       if(e.key === 's' && e.altKey) {
@@ -140,53 +260,6 @@ export default {
       } else if(e.key === 'F5') {
         this.groupDelClick(e)
       }
-    },
-    handleEnter($event) {
-      this.groupAddClick($event)
-    },
-    // 按下回车键
-    keyupSubmit(e, groupIndex, index, type) {
-      if(this.notUseEnterUp) {
-        this.notUseEnterUp = false;
-        return
-      }
-      let lineField, fieldIndex;
-      // 单独字段验证
-      const formDom = this.$refs['my-form'];
-      const validateKey = `groupList.${groupIndex}.${index}.${type}`;
-      formDom.validateField(validateKey, (errorMessage) => {
-        if(errorMessage !== '') {
-          this.$message.error(errorMessage);
-        }else {
-          if(index === 0) {
-            lineField = this.firstLineField;
-          }else {
-            lineField = this.secondLineField;
-          }
-          lineField.forEach((ev, i) => {
-            if(ev === type) {
-              fieldIndex = i;
-            }
-          });
-          if(fieldIndex === lineField.length - 1) {
-            // 最后一个字段，新增数组
-            this.groupAddClick(e)
-          }else {
-            // 下一个字段下标
-            const nextFieldIndex = fieldIndex + 1;
-            const activeKey = `groupList.${groupIndex}.${index}.${lineField[nextFieldIndex]}`;
-            this.rowColName = activeKey;
-            this.$nextTick(() => {
-              const activeDom =  this.$refs[activeKey];
-              activeDom[0].focus();
-              const name = activeKey.split('.')[3];
-              if(!this.inputSelectList.includes(name)) {
-                activeDom[0].select();
-              }
-            })
-          }
-        }
-      })
     },
     // 下拉框改变值
     selectChange(e, groupIndex, index, type) {
@@ -268,12 +341,12 @@ export default {
           activeKey = `groupList.${groupIndex}.${index}.useRatio`;
         }
         this.rowColName = activeKey;
+        this.focusRowItem = activeKey;
         this.$nextTick(() => {
-          const activeDom = this.$refs[activeKey];
-          activeDom[0].focus();
-          const name = activeKey.split('.')[3];
-          if(!this.inputSelectList.includes(name)) {
-            activeDom[0].select();
+          if(this.$refs[activeKey]) {
+            const activeDom = this.$refs[activeKey];
+            activeDom[0].focus();
+            activeDom[0].select && activeDom[0].select();
           }
         })
       })
@@ -362,25 +435,6 @@ export default {
     rowClassName({row, rowIndex}) {
       row.index = rowIndex;
     },
-    // 单元格点击
-    cellClick(row, column, cell, event) {
-      this.itemActive = { groupIndex: row.groupIndex, itemIndex: row.index };
-      // this.rowColName = `${column.property}${row.groupIndex}${row.index}`;
-      const activeKey = `groupList.${row.groupIndex}.${row.index}.${column.property}`
-      this.rowColName = activeKey;
-      event.stopPropagation();
-      this.$nextTick(() => {
-        if(this.$refs[activeKey]) {
-          const name = activeKey.split('.')[3];
-          const selectArr = ['medId', 'usage', 'mode', 'remark'];
-          const activeDom =  this.$refs[activeKey];
-          activeDom[0].focus();
-          if(!selectArr.includes(name)) {
-            activeDom[0].select();
-          }
-        }
-      })
-    },
     // 保存提交
     async savePost(event) {
       await this.saveClick(event);
@@ -407,12 +461,12 @@ export default {
             const activeKey = keys[0];
             console.log('activeKey', activeKey)
             this.rowColName = activeKey;
+            this.focusRowItem = activeKey;
             this.$nextTick(() => {
-              event.stopPropagation();
-              // const name = activeKey.split('.')[3];
-              // const selectArr = ['medId', 'usage', 'mode'];
+              // event.stopPropagation();
               const activeDom =  this.$refs[activeKey];
               activeDom[0].focus();
+              activeDom[0].select && activeDom[0].select();
               this.$message.error(object[activeKey][0].message)
             })
           }
@@ -420,7 +474,10 @@ export default {
       })
     },
     boxClick(e) {
-      this.rowColName = ''
+      if(this.listenFormFlag) {
+        this.listenFormFlag = false;
+        document.removeEventListener('keyup', this.handleFormKeyup);
+      }
     },
     // ifrmae发送消息
     postMessage() {
@@ -434,6 +491,7 @@ export default {
     reset() {
       this.itemActive = cloneObj(itemActiveCopy);
       this.rowColName = '';
+      this.focusRowItem = '';
       this.$refs['my-form'].clearValidate();
       this.countActiveNames();
     },
@@ -567,6 +625,7 @@ export default {
       const groupLastIndex = groupList.length - 1;
       const activeKey = `groupList.${groupLastIndex}.${groupList[groupLastIndex].length - 1}.medId`;
       this.rowColName = activeKey;
+      this.focusRowItem = activeKey;
       // 拉开选择药品下拉框
       this.$nextTick(() => {
         event.stopPropagation();

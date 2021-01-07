@@ -22,7 +22,7 @@
       <div class="pres-item" :class="[ index === presIndex ? 'active' : '' ]" v-for="(item, index) in form.presList" :key="index" @click="presIndexClick($event, index)">{{ `${index+1}-${item.name}` }}<span class="z-m-l-5 z-font-bold" @click.stop="presDelClick($event, index)">X</span></div>
       <div class="pres-item-icon" @click="presAddClick"><i class="el-icon-circle-plus-outline"></i></div>
     </div>
-    <el-form ref="my-form" :rules="rules" v-loading="formLoading" :model="form.presList[presIndex]" :show-message="false">
+    <el-form class="my-form" ref="my-form" :rules="rules" v-loading="formLoading" :model="form.presList[presIndex]" :show-message="false" @click.native="formClick">
       <div class="order-table z-table-hasRight">
         <el-table
           :header-cell-class-name="starAdd"
@@ -148,7 +148,7 @@
                         filterable
                         :filter-method="(val) => filterMethod(val, ['medName', 'inputcode1', 'inputcode2'], 'drugList','drugListCopy')"
                         @visible-change="selectVisible($event, 'medId')"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.medId`"
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.medId`"
                         :ref="`groupList.${groupIndex}.${$index}.medId`"
                         @change="selectChange($event, groupIndex, $index, 'medId')">
                         <template>
@@ -269,9 +269,8 @@
                         class="z-input-small"
                         size="small"
                         v-model="row.useRatio"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.useRatio`"
-                        :ref="`groupList.${groupIndex}.${$index}.useRatio`"
-                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'useRatio')"/>
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.useRatio`"
+                        :ref="`groupList.${groupIndex}.${$index}.useRatio`"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ row.useRatio }}</span>
                         <span v-if="row.useRatio">{{ row.useUnit }}</span>
@@ -295,9 +294,8 @@
                         class="z-input-small"
                         size="small"
                         v-model="row.doseRatio"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.doseRatio`"
-                        :ref="`groupList.${groupIndex}.${$index}.doseRatio`"
-                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'doseRatio')"/>
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.doseRatio`"
+                        :ref="`groupList.${groupIndex}.${$index}.doseRatio`"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ row.doseRatio }}</span>
                         <span v-if="row.doseRatio">{{ row.doseUnit }}</span>
@@ -324,7 +322,7 @@
                         filterable
                         :filter-method="(val) => filterMethod(val, ['name', 'id'], 'usageList','usageListCopy')"
                         @visible-change="selectVisible($event, 'usage')"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.usage` && $index === 0"
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.usage` && $index === 0"
                         :ref="`groupList.${groupIndex}.${$index}.usage`"
                         @change="selectChange($event, groupIndex, $index, 'usage')">
                         <template>
@@ -367,7 +365,7 @@
                         filterable
                         :filter-method="(val) => filterMethod(val, ['name', 'id'], 'modeList', 'modeListCopy')"
                         @visible-change="selectVisible($event, 'mode')"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.mode` && $index === 0"
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.mode` && $index === 0"
                         :ref="`groupList.${groupIndex}.${$index}.mode`"
                         @change="selectChange($event, groupIndex, $index, 'mode')">
                         <template>
@@ -406,9 +404,8 @@
                         type="number"
                         size="small"
                         v-model="row.day"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.day` && $index === 0"
-                        :ref="`groupList.${groupIndex}.${$index}.day`"
-                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'day')"/>
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.day` && $index === 0"
+                        :ref="`groupList.${groupIndex}.${$index}.day`"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ $index === 0 ? row.day : '-' }}</span>
                       </div>
@@ -430,9 +427,8 @@
                         type="number"
                         size="small"
                         v-model="row.rate"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.rate`  && $index === 0"
-                        :ref="`groupList.${groupIndex}.${$index}.rate`"
-                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'rate')"/>
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.rate`  && $index === 0"
+                        :ref="`groupList.${groupIndex}.${$index}.rate`"/>
                       <div class="z-med-name text-right" v-else><span>{{ $index === 0 ? row.rate : '-' }}</span></div>
                     </div>
                   </el-form-item>
@@ -453,9 +449,8 @@
                         type="number"
                         size="small"
                         v-model="row.presRatio"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.presRatio`"
-                        :ref="`groupList.${groupIndex}.${$index}.presRatio`"
-                        @keyup.enter.native="keyupSubmit($event, groupIndex, $index, 'presRatio')"/>
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.presRatio`"
+                        :ref="`groupList.${groupIndex}.${$index}.presRatio`"/>
                       <div class="z-med-name text-right" v-else><span>{{ row.presRatio }}</span><span v-if="row.presRatio">{{ row.presUnit }}</span></div>
                     </div>
                   </el-form-item>
@@ -476,10 +471,9 @@
                         clearable
                         placeholder="请选择"
                         size="small"
-                        v-if="rowColName === `groupList.${groupIndex}.${$index}.remark`"
+                        v-if="focusRowItem === `groupList.${groupIndex}.${$index}.remark`"
                         :ref="`groupList.${groupIndex}.${$index}.remark`"
-                        filterable
-                        @keydown.enter.native="handleEnter">
+                        filterable>
                         <el-option v-for="item in remarkList" :key="item.id" :label="item.name" :value="item.name"></el-option>
                       </el-select>
                       <div class="z-med-name" v-else>{{ row.remark }}</div>
