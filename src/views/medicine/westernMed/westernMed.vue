@@ -265,12 +265,13 @@
                     :rules="{ required: true, message: '用量必填且大于0', validator: validateDigits, trigger: 'change' }">
                     <div class="med-validate-item">
                       <el-input
-                        type="number"
+                        type="text"
                         class="z-input-small"
                         size="small"
                         v-model="row.useRatio"
                         v-if="focusRowItem === `groupList.${groupIndex}.${$index}.useRatio`"
-                        :ref="`groupList.${groupIndex}.${$index}.useRatio`"/>
+                        :ref="`groupList.${groupIndex}.${$index}.useRatio`"
+                        :class="[`groupList.${groupIndex}.${$index}.useRatio`]"/>
                       <div class="z-med-name text-right" v-else>
                         <span>{{ row.useRatio }}</span>
                         <span v-if="row.useRatio">{{ row.useUnit }}</span>
@@ -290,7 +291,7 @@
                     :rules="{ required: true, message: '剂量必填且大于0', validator: validateDigits, trigger: 'change' }">
                     <div class="med-validate-item">
                       <el-input
-                        type="number"
+                        type="text"
                         class="z-input-small"
                         size="small"
                         v-model="row.doseRatio"
@@ -401,7 +402,7 @@
                     :rules=" $index === 0 ? { required: true, message: '用药天数必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
                     <div class="med-validate-item">
                       <el-input
-                        type="number"
+                        type="text"
                         size="small"
                         v-model="row.day"
                         v-if="focusRowItem === `groupList.${groupIndex}.${$index}.day` && $index === 0"
@@ -424,7 +425,7 @@
                     :rules=" $index === 0 ? { required: true, message: '用药次数必填且大于0', validator: validateDigits, trigger: 'change' } : {}">
                     <div class="med-validate-item">
                       <el-input
-                        type="number"
+                        type="text"
                         size="small"
                         v-model="row.rate"
                         v-if="focusRowItem === `groupList.${groupIndex}.${$index}.rate`  && $index === 0"
@@ -446,7 +447,7 @@
                     <div class="med-validate-item">
                       <el-input
                         class="z-input-small"
-                        type="number"
+                        type="text"
                         size="small"
                         v-model="row.presRatio"
                         v-if="focusRowItem === `groupList.${groupIndex}.${$index}.presRatio`"

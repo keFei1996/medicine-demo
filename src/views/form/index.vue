@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-form ref="form" :model="form" label-width="120px">
       <el-form-item label="Activity name">
-        <el-input v-model="form.name" />
+        <el-input v-model="form.name" @input="changeInput($event)" id="emojiInput" />
       </el-form-item>
       <el-form-item label="Activity zone">
         <el-select v-model="form.region" placeholder="please select your zone">
@@ -64,6 +64,14 @@ export default {
     }
   },
   methods: {
+    changeInput(event) {
+      console.log(event)
+      var elInput = document.getElementById('emojiInput'); //根据id选择器选中对象
+      console.log(elInput)
+      var startPos = elInput.selectionStart;// input 第0个字符到选中的字符
+      var endPos = elInput.selectionEnd;// 选中的字符到最后的字符
+      console.log(startPos, endPos)
+    },
     onSubmit() {
       this.$message('submit!')
     },
