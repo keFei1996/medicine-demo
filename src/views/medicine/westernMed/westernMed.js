@@ -140,7 +140,8 @@ export default {
   created() {
   },
   mounted() {
-    document.addEventListener('keyup', this.handleKeyup, false)
+    document.addEventListener('keyup', this.handleKeyup, false);
+    this.formClick();
   },
   destroyed() {
     document.removeEventListener('keyup', this.handleKeyup)
@@ -354,6 +355,7 @@ export default {
     },
     // 表单点击
     formClick(event) {
+      console.log(2)
       if(!this.listenFormFlag) {
         this.listenFormFlag = true;
         document.addEventListener('keyup', this.handleFormKeyup, false);
@@ -599,10 +601,11 @@ export default {
       })
     },
     boxClick(e) {
-      if(this.listenFormFlag) {
-        this.listenFormFlag = false;
-        document.removeEventListener('keyup', this.handleFormKeyup);
-      }
+      // console.log(9)
+      // if(this.listenFormFlag) {
+      //   this.listenFormFlag = false;
+      //   document.removeEventListener('keyup', this.handleFormKeyup);
+      // }
     },
     // ifrmae发送消息
     postMessage() {
