@@ -37,7 +37,8 @@ Vue.use(ElementUI, { locale })
 Vue.config.productionTip = false;
 // 屏蔽浏览器快捷键
 document.addEventListener('keydown', function(e){
-  if(e.key === 'F3') {
+  const keyArr = ['F1', 'F2', 'F3', 'F4', 'F5']
+  if(keyArr.includes(e.key)) {
     e.preventDefault();
     return false;
   }

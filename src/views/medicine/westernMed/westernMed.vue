@@ -30,78 +30,97 @@
           style="width: 100%"
           :height="45"
           border
-          :data="[]">
+          :data="[]"
+          @header-dragend="headerDragend">
           <el-table-column
             label="药名标记"
+            prop="useUnit"
             align="center"
+            :width="widthObj.useUnit"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="药名名称"
             align="center"
-            width="160px"
+            prop="medId"
+            :width="widthObj.medId"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="剂型"
+            prop="formName"
             align="center"
+            :width="widthObj.formName"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="规格"
+            prop="spec"
             align="center"
+            :width="widthObj.spec"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="产地"
+            prop="factoryName"
             align="center"
-            width="126px"
+            :width="widthObj.factoryName"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="用量"
             align="center"
-            width="80px"
+            :width="widthObj.useRatio"
+            prop="useRatio"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="剂量"
             align="center"
-            width="80px"
+            :width="widthObj.doseRatio"
+            prop="doseRatio"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="用法"
             align="center"
+            prop="usage"
+            :width="widthObj.usage"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
-            prop="name"
+            prop="mode"
             align="center"
             label="给药方式"
+            :width="widthObj.mode"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
+            prop="day"
             label="用药天数"
             align="center"
-            width="80px"
+            :width="widthObj.day"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
             label="用药次数"
+            prop="rate"
             align="center"
-            width="80px"
+            :width="widthObj.rate"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
+            prop="presRatio"
             label="配药数量"
             align="center"
-            width="80px"
+            :width="widthObj.presRatio"
             :show-overflow-tooltip="true">
           </el-table-column>
           <el-table-column
+            prop="remark"
             label="备注"
             align="center"
+            :width="widthObj.remark"
             :show-overflow-tooltip="true">
           </el-table-column>
         </el-table>
@@ -120,6 +139,7 @@
               :row-style="rowStyle">
               <el-table-column
                 label="药名标记"
+                :width="widthObj.useUnit"
                 align="center"
                 prop="useUnit"
                 :show-overflow-tooltip="true">
@@ -131,7 +151,7 @@
               </el-table-column>
               <el-table-column
                 label="药名名称"
-                width="160px"
+                :width="widthObj.medId"
                 prop="medId"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
@@ -226,6 +246,7 @@
               <el-table-column
                 label="剂型"
                 prop="formName"
+                :width="widthObj.formName"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row }">
                   <div class="z-med-name">
@@ -236,6 +257,7 @@
               <el-table-column
                 label="规格"
                 prop="spec"
+                :width="widthObj.spec"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row }">
                   <div class="z-med-name">
@@ -245,8 +267,8 @@
               </el-table-column>
               <el-table-column
                 label="产地"
-                width="126px"
                 prop="factoryName"
+                :width="widthObj.factoryName"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row }">
                   <div class="z-med-name">
@@ -257,7 +279,7 @@
               <el-table-column
                 prop="useRatio"
                 label="用量"
-                width="80px"
+                :width="widthObj.useRatio"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
                   <el-form-item
@@ -283,7 +305,7 @@
               <el-table-column
                 prop="doseRatio"
                 label="剂量"
-                width="80px"
+                :width="widthObj.doseRatio"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
                   <el-form-item
@@ -308,6 +330,7 @@
               <el-table-column
                 prop="usage"
                 label="用法"
+                :width="widthObj.usage"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
                   <el-form-item
@@ -349,6 +372,7 @@
                 </template>
               </el-table-column>
               <el-table-column
+                :width="widthObj.mode"
                 prop="mode"
                 label="给药方式"
                 :show-overflow-tooltip="true">
@@ -394,7 +418,7 @@
               <el-table-column
                 prop="day"
                 label="用药天数"
-                width="80px"
+                :width="widthObj.day"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
                   <el-form-item
@@ -417,7 +441,7 @@
               <el-table-column
                 prop="rate"
                 label="用药次数"
-                width="80px"
+                :width="widthObj.rate"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
                   <el-form-item
@@ -438,7 +462,7 @@
               <el-table-column
                 prop="presRatio"
                 label="配药数量"
-                width="80px"
+                :width="widthObj.presRatio"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
                   <el-form-item
@@ -460,6 +484,7 @@
               <el-table-column
                 prop="remark"
                 label="备注"
+                :width="widthObj.remark"
                 :show-overflow-tooltip="true">
                 <template slot-scope="{ row, $index }">
                   <el-form-item

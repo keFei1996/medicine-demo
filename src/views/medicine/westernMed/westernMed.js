@@ -119,7 +119,22 @@ export default {
       keyupField: ['useUnit', 'medId', 'formName', 'spec', 'factoryName', 'useRatio', 'doseRatio', 'usage', 'mode', 'day', 'rate', 'presRatio', 'remark'],  // 表格的所有字段
       listenFormFlag: false, // 是否开启键盘监听事件
       cellClickFlag: false,  // 单元格是否点击标志
-      selectionName: ''
+      selectionName: '',
+      widthObj: {
+        useUnit: '',
+        medId: '160px',
+        formName: '',
+        spec: '',
+        factoryName: '126px',
+        useRatio: '80px',
+        doseRatio: '80px',
+        usage: '',
+        mode: '80px',
+        day: '80px',
+        rate: '80px',
+        presRatio: '80px',
+        remark: ''
+      }
     }
   },
   created() {
@@ -132,6 +147,12 @@ export default {
     document.removeEventListener('keyup', this.handleFormKeyup)
   },
   methods: {
+    // 表格宽度变化
+    headerDragend(newWidth, oldWidth, column, event) {
+      this.widthObj[column.property] = newWidth + 'px'
+      console.log(column)
+      console.log(newWidth)
+    },
     // 单元格点击
     cellClick(row, column, cell) {
       this.itemActive = { groupIndex: row.groupIndex, itemIndex: row.index };
@@ -155,7 +176,7 @@ export default {
     // 按下回车键
     // 处理表单键盘操作
     handleFormKeyup(e) {
-      console.log(e)
+      // console.log(e)
       const { rowColName, keyupField, form, presIndex } = this;
       const presList = form.presList;
       const groupList = presList[presIndex].groupList;
@@ -169,6 +190,18 @@ export default {
         keyupField.forEach((ev, i) => {
           if(ev === name) {
             nameIndex = i;
+          }
+        });
+        // 当前行的字典列表
+        let lineField, fieldIndex;
+        if (+index === 0) {
+          lineField = this.firstLineField;
+        } else {
+          lineField = this.secondLineField;
+        }
+        lineField.forEach((ev, i) => {
+          if (ev === name) {
+            fieldIndex = i;
           }
         });
         // 区分聚焦和非聚焦状态
@@ -217,8 +250,11 @@ export default {
               this.rowColName = nameArr.join('.')
             }
           }else if(e.key === 'Enter') {
-            this.focusRowItem = rowColName;
-            this.inputFocusPub(rowColName)
+            // 该字段是否需要输入
+            if(lineField.includes(name)) {
+              this.focusRowItem = rowColName;
+              this.inputFocusPub(rowColName);
+            }
           }
         }else {
           // 记录光标的位置
@@ -226,18 +262,6 @@ export default {
           const domVal = domEl.value;
           const selectionStart = domEl.selectionStart;
           const selectionEnd = domEl.selectionEnd;
-          // 需要输入的input列表
-          let lineField, fieldIndex;
-          if (+index === 0) {
-            lineField = this.firstLineField;
-          } else {
-            lineField = this.secondLineField;
-          }
-          lineField.forEach((ev, i) => {
-            if (ev === name) {
-              fieldIndex = i;
-            }
-          });
           // 聚焦时
           if(e.key === 'ArrowUp') {
           }else if(e.key === 'ArrowDown') {
@@ -329,8 +353,7 @@ export default {
       })
     },
     // 表单点击
-    formClick() {
-      console.log(5)
+    formClick(event) {
       if(!this.listenFormFlag) {
         this.listenFormFlag = true;
         document.addEventListener('keyup', this.handleFormKeyup, false);
@@ -340,7 +363,7 @@ export default {
       }else {
         this.cellClickFlag = false;
       }
-      event.stopPropagation();
+      event && event.stopPropagation();
     },
     // 全局的键盘监听
     handleKeyup(e) {
@@ -369,6 +392,10 @@ export default {
       }else if(type === 'medId') {
         // 药名
         list = this.drugList;
+      } else if(type === 'remark') {
+        // 备注
+        // this.notUseEnterUp = true;
+        // return;
       }
       list.forEach(ev => {
         if(ev.id === e || ev.medId === e) {
@@ -548,6 +575,7 @@ export default {
         formDom.validate((valid, object) => {
           if(valid) {
             formDom.clearValidate();
+            this.focusRowItem = '';
             resolve()
           }else {
             formDom.clearValidate();
@@ -604,12 +632,13 @@ export default {
     },
     // 处方添加
     async presAddClick(event) {
-      await this.saveClick(event)
+      await this.saveClick()
       const presList = this.form.presList;
       presList.push({ name: '普通院内处方', groupList: cloneObj(presItemCopy)});
       this.presIndex = presList.length - 1;
       this.reset();
-      this.openMedSelect(event);
+      this.openMedSelect();
+      event.stopPropagation();
     },
     // 处方删除
     presDelClick(event, index) {
